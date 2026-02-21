@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ messages: messageDetails });
   } catch (err: any) {
-    console.error('Gmail API Error:', err);
-    return NextResponse.json({ error: 'Failed to access Gmail API' }, { status: 500 });
+    console.error('CRITICAL GMAIL API ERROR:', err);
+    return NextResponse.json({ error: err.message || 'Failed to access Gmail API' }, { status: 500 });
   }
 }

@@ -58,11 +58,15 @@ export default function Login({ onLogin }: LoginProps) {
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
           scope: 'https://www.googleapis.com/auth/gmail.readonly',
           callback: (tokenResponse: any) => {
+            console.log('Token Client Response:', tokenResponse);
             if (tokenResponse && tokenResponse.access_token) {
               const session = auth.getSession();
               if (session) {
+                console.log('Got Access Token, calling onLogin...');
                 onLogin(session.name, true, tokenResponse.access_token);
               }
+            } else if (tokenResponse.error) {
+              console.error('Token Error:', tokenResponse.error);
             }
           },
         });
@@ -87,6 +91,13 @@ export default function Login({ onLogin }: LoginProps) {
       const user = JSON.parse(jsonPayload);
       onLogin(user.name, true);
       auth.setSession({ email: user.email, name: user.name });
+
+      // Automatically trigger Gmail permission request
+      if (tokenClient) {
+        setTimeout(() => {
+          tokenClient.requestAccessToken();
+        }, 500);
+      }
     } catch (err) {
       setError('Failed to process Google login.');
     }
@@ -229,7 +240,20 @@ export default function Login({ onLogin }: LoginProps) {
 
         <div className="login-divider">or</div>
         <div className="oauth-row">
-          <div id="google-btn-container" style={{ margin: '0 auto' }}></div>
+          <div id="google-btn-container" style={{
+            margin: '0 auto',
+            minHeight: '44px',
+            width: '280px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px dashed rgba(255,255,255,0.1)',
+            borderRadius: '4px',
+            fontSize: '11px',
+            color: 'rgba(255,255,255,0.3)'
+          }}>
+            Loading Google Sign-in...
+          </div>
         </div>
         <div className="oauth-row" style={{ marginTop: '12px' }}>
           <button className="oauth-btn" style={{ width: '100%' }} onClick={() => handleOAuthClick('Slack')} disabled={loading}># &nbsp;Slack SSO</button>

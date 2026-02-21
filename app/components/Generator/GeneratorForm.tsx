@@ -8,9 +8,10 @@ interface GeneratorFormProps {
   generating: boolean;
   integrations: { [key: string]: boolean };
   uploadedFiles: any[];
+  realEmails?: any[];
 }
 
-export default function GeneratorForm({ onGenerate, generating, integrations, uploadedFiles }: GeneratorFormProps) {
+export default function GeneratorForm({ onGenerate, generating, integrations, uploadedFiles, realEmails }: GeneratorFormProps) {
   const [formData, setFormData] = useState({
     projectName: '',
     projectDesc: '',
@@ -192,7 +193,18 @@ FW: Quarterly Newsletter - Internal Only
 
         <div className="section-lbl" style={{ marginTop: '20px' }}>Intelligence Signal</div>
         <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', fontSize: '11px', color: 'var(--mist)', fontFamily: "'DM Mono', monospace" }}>
-          Using Enron Email Dataset (Public Domain) and AMI Meeting Corpus (CC BY 4.0) for requirements validation.
+          {integrations.gmail && realEmails && realEmails.length > 0 ? (
+            <div className="real-signal-list">
+              <div style={{ color: 'var(--gold)', marginBottom: '8px', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '0.1em' }}>Live Gmail Feed Active</div>
+              {realEmails.map((msg: any) => (
+                <div key={msg.id} style={{ marginBottom: '6px', borderLeft: '1px solid var(--sage)', paddingLeft: '8px', opacity: 0.8 }}>
+                  {msg.subject}
+                </div>
+              ))}
+            </div>
+          ) : (
+            "Using Enron Email Dataset (Public Domain) and AMI Meeting Corpus (CC BY 4.0) for requirements validation."
+          )}
         </div>
       </div>
     </div>

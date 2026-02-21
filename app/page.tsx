@@ -49,6 +49,12 @@ export default function Home() {
     setRealEmails([]);
   };
 
+  React.useEffect(() => {
+    if (gmailToken && integrations.gmail && realEmails.length === 0) {
+      fetchRealMails();
+    }
+  }, [gmailToken, integrations.gmail]);
+
   const toggleIntegration = (name: string) => {
     setIntegrations(prev => ({ ...prev, [name]: !prev[name as keyof typeof integrations] }));
   };
@@ -70,15 +76,22 @@ export default function Home() {
   };
 
   const fetchRealMails = async () => {
-    if (!gmailToken) return;
+    if (!gmailToken) {
+      console.log('No GMAIL_TOKEN found in state.');
+      return;
+    }
+    console.log('Fetching real mails with token ending in:', gmailToken.slice(-5));
     try {
       const res = await fetch(`/api/gmail?token=${gmailToken}`);
       const data = await res.json();
-      if (data.messages) {
+      console.log('API Response:', data);
+      if (data.messages && data.messages.length > 0) {
         setRealEmails(data.messages);
+      } else {
+        console.warn('API returned or found no messages.');
       }
     } catch (err) {
-      console.error('Failed to fetch real mails');
+      console.error('Fetch error:', err);
     }
   };
 
@@ -194,6 +207,7 @@ export default function Home() {
           generating={generating}
           integrations={integrations}
           uploadedFiles={uploadedFiles}
+          realEmails={realEmails}
         />
       )}
       {activeTab === 'editor' && (
