@@ -30,18 +30,23 @@ export default function Home() {
     { type: 'sys', text: '✦ Hello! I can help you edit sections, add requirements, and refine your BRD.' }
   ]);
   const [aiProcessing, setAiProcessing] = useState(false);
+  const [gmailToken, setGmailToken] = useState<string | null>(null);
+  const [realEmails, setRealEmails] = useState<any[]>([]);
 
-  const handleLogin = (name: string, isSocial?: boolean) => {
+  const handleLogin = (name: string, isSocial?: boolean, token?: string) => {
     setUser({ name, avatar: name.slice(0, 2).toUpperCase() });
     setActiveTab('dashboard');
     if (isSocial) {
       setIntegrations(prev => ({ ...prev, gmail: true }));
+      if (token) setGmailToken(token);
     }
   };
 
   const handleLogout = () => {
     auth.setSession(null);
     setUser(null);
+    setGmailToken(null);
+    setRealEmails([]);
   };
 
   const toggleIntegration = (name: string) => {
@@ -62,6 +67,19 @@ export default function Home() {
 
   const removeFile = (index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const fetchRealMails = async () => {
+    if (!gmailToken) return;
+    try {
+      const res = await fetch(`/api/gmail?token=${gmailToken}`);
+      const data = await res.json();
+      if (data.messages) {
+        setRealEmails(data.messages);
+      }
+    } catch (err) {
+      console.error('Failed to fetch real mails');
+    }
   };
 
   const generateBRD = (formData: any) => {
@@ -166,6 +184,8 @@ export default function Home() {
           onToggleIntegration={toggleIntegration}
           onAddFiles={addFiles}
           onRemoveFile={removeFile}
+          onFetchGmail={fetchRealMails}
+          realEmails={realEmails}
         />
       )}
       {activeTab === 'generate' && (

@@ -11,7 +11,7 @@ import './login.css';
 import { auth } from '../../utils/auth';
 
 interface LoginProps {
-  onLogin: (name: string, isSocial?: boolean) => void;
+  onLogin: (name: string, isSocial?: boolean, accessToken?: string) => void;
 }
 
 export default function Login({ onLogin }: LoginProps) {
@@ -22,6 +22,7 @@ export default function Login({ onLogin }: LoginProps) {
   const [loading, setLoading] = useState(false);
   const [showAccountSelector, setShowAccountSelector] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState('');
+  const [tokenClient, setTokenClient] = useState<any>(null);
 
   useEffect(() => {
     // Load Google Identity Services script
@@ -51,6 +52,21 @@ export default function Login({ onLogin }: LoginProps) {
             width: 280
           });
         }
+
+        // Initialize Token Client for Gmail Scopes
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+          scope: 'https://www.googleapis.com/auth/gmail.readonly',
+          callback: (tokenResponse: any) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              const session = auth.getSession();
+              if (session) {
+                onLogin(session.name, true, tokenResponse.access_token);
+              }
+            }
+          },
+        });
+        setTokenClient(client);
       }
     };
 
@@ -116,9 +132,16 @@ export default function Login({ onLogin }: LoginProps) {
 
   const handleOAuthClick = (provider: string) => {
     if (provider === 'Google') {
-      // The Google button is now rendered by the script itself
-      // We just provide a fallback error if it's not initialized
-      if (!window.google || !window.google.accounts) {
+      if (window.google && window.google.accounts) {
+        // If we already have a session, just request the token
+        const session = auth.getSession();
+        if (session && tokenClient) {
+          tokenClient.requestAccessToken();
+        } else {
+          // Otherwise, the Sign-In button handles the initial authentication
+          setError('Please use the "Sign in with Google" button below first.');
+        }
+      } else {
         setError('Google login not initialized yet. Please wait a moment.');
       }
       return;

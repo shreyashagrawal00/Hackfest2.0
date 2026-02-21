@@ -9,6 +9,8 @@ interface IntegrationsProps {
   onToggleIntegration: (name: string) => void;
   onAddFiles: (files: File[]) => void;
   onRemoveFile: (index: number) => void;
+  onFetchGmail: () => void;
+  realEmails: any[];
 }
 
 export default function Integrations({
@@ -16,7 +18,9 @@ export default function Integrations({
   uploadedFiles,
   onToggleIntegration,
   onAddFiles,
-  onRemoveFile
+  onRemoveFile,
+  onFetchGmail,
+  realEmails
 }: IntegrationsProps) {
   const [connectingId, setConnectingId] = React.useState<string | null>(null);
 
@@ -29,6 +33,7 @@ export default function Integrations({
     setConnectingId(id);
     setTimeout(() => {
       onToggleIntegration(id);
+      if (id === 'gmail') onFetchGmail();
       setConnectingId(null);
     }, 1500);
   };
@@ -73,6 +78,7 @@ export default function Integrations({
             connecting={connectingId === 'gmail'}
             onToggle={() => handleToggle('gmail')}
             bgColor="rgba(234,67,53,0.1)"
+            realEmails={realEmails}
           />
           <IntegrationCard
             id="slack"
@@ -147,7 +153,7 @@ export default function Integrations({
   );
 }
 
-function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle, bgColor }: any) {
+function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle, bgColor, realEmails }: any) {
   return (
     <div className={`int-card ${connected ? 'connected' : ''} ${connecting ? 'connecting' : ''}`} onClick={!connecting ? onToggle : undefined}>
       <div className="int-head">
@@ -158,6 +164,16 @@ function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle
       </div>
       <div className="int-name">{name}</div>
       <div className="int-desc">{desc}</div>
+      {connected && id === 'gmail' && realEmails && realEmails.length > 0 && (
+        <div className="real-data-preview">
+          <div className="preview-label">Latest Signals Identified:</div>
+          {realEmails.map((msg: any) => (
+            <div key={msg.id} className="preview-item">
+              <span className="dot"></span> {msg.subject}
+            </div>
+          ))}
+        </div>
+      )}
       {connected && <div className="int-sync">↻ Synced just now</div>}
       {connecting && <div className="int-sync" style={{ color: 'var(--mist)' }}>🔐 Establishing secure link...</div>}
     </div>
