@@ -2,11 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
 import './login.css';
 import { auth } from '../../utils/auth';
 
@@ -22,7 +17,31 @@ export default function Login({ onLogin }: LoginProps) {
   const [loading, setLoading] = useState(false);
   const [showAccountSelector, setShowAccountSelector] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState('');
-  const [tokenClient, setTokenClient] = useState<any>(null);
+  const [tokenClient, setTokenClient] = useState<{ requestAccessToken: () => void } | null>(null);
+
+  const handleGoogleResponse = React.useCallback((response: { credential: string }) => {
+    try {
+      // Decode JWT (standard way for Google One Tap / Button)
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      const user = JSON.parse(jsonPayload);
+      onLogin(user.name, true);
+      auth.setSession({ email: user.email, name: user.name });
+
+      // Automatically trigger Gmail permission request
+      if (tokenClient) {
+        setTimeout(() => {
+          tokenClient.requestAccessToken();
+        }, 500);
+      }
+    } catch (err) {
+      setError('Failed to process Google login.');
+    }
+  }, [onLogin, tokenClient]);
 
   useEffect(() => {
     // Load Google Identity Services script
@@ -57,7 +76,7 @@ export default function Login({ onLogin }: LoginProps) {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
           scope: 'https://www.googleapis.com/auth/gmail.readonly',
-          callback: (tokenResponse: any) => {
+          callback: (tokenResponse: { access_token?: string; error?: string }) => {
             console.log('Token Client Response:', tokenResponse);
             if (tokenResponse && tokenResponse.access_token) {
               const session = auth.getSession();
@@ -77,31 +96,7 @@ export default function Login({ onLogin }: LoginProps) {
     return () => {
       document.body.removeChild(script);
     };
-  }, []);
-
-  const handleGoogleResponse = (response: any) => {
-    try {
-      // Decode JWT (standard way for Google One Tap / Button)
-      const base64Url = response.credential.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-
-      const user = JSON.parse(jsonPayload);
-      onLogin(user.name, true);
-      auth.setSession({ email: user.email, name: user.name });
-
-      // Automatically trigger Gmail permission request
-      if (tokenClient) {
-        setTimeout(() => {
-          tokenClient.requestAccessToken();
-        }, 500);
-      }
-    } catch (err) {
-      setError('Failed to process Google login.');
-    }
-  };
+  }, [handleGoogleResponse, onLogin]);
 
   const mockAccounts = {
     'Slack': [
@@ -133,8 +128,9 @@ export default function Login({ onLogin }: LoginProps) {
         } else {
           onLogin(user.name);
         }
-      } catch (err: any) {
-        setError(err.message || 'Login failed');
+      } catch (_err: unknown) {
+        const error = _err as Error;
+        setError(error.message || 'Login failed');
       } finally {
         setLoading(false);
       }
@@ -161,7 +157,7 @@ export default function Login({ onLogin }: LoginProps) {
     setShowAccountSelector(true);
   };
 
-  const handleSelectAccount = (account: any) => {
+  const handleSelectAccount = (account: { email: string; name: string }) => {
     auth.setSession({ email: account.email, name: account.name });
     onLogin(account.name);
   };

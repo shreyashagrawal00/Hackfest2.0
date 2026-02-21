@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { auth } from './utils/auth';
 import AppLayout from './components/Layout/AppLayout';
 import Login from './components/Login/Login';
@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import Integrations from './components/Integrations/Integrations';
 import GeneratorForm from './components/Generator/GeneratorForm';
 import Editor from './components/Editor/Editor';
+import { BRD, GmailMessage, IndexedFile, GeneratorFormData } from './types';
 
 export default function Home() {
   const [user, setUser] = useState<{ name: string; avatar: string } | null>(null);
@@ -31,7 +32,7 @@ export default function Home() {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
           scope: 'https://www.googleapis.com/auth/gmail.readonly',
-          callback: (tokenResponse: any) => {
+          callback: (tokenResponse: { access_token?: string }) => {
             if (tokenResponse && tokenResponse.access_token) {
               setGmailToken(tokenResponse.access_token);
               setIntegrations(prev => ({ ...prev, gmail: true }));
@@ -48,21 +49,37 @@ export default function Home() {
     };
   }, []);
 
-  const [tokenClient, setTokenClient] = useState<any>(null);
+  const [tokenClient, setTokenClient] = useState<{ requestAccessToken: () => void } | null>(null);
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [integrations, setIntegrations] = useState({ gmail: false, slack: false, fireflies: false });
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
-  const [brds, setBrds] = useState<any[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<IndexedFile[]>([]);
+  const [brds, setBrds] = useState<BRD[]>([]);
   const [currentBRDIndex, setCurrentBRDIndex] = useState<number | null>(null);
   const [generating, setGenerating] = useState(false);
-  const [aiMessages, setAiMessages] = useState<any[]>([
+  const [aiMessages, setAiMessages] = useState<Array<{ type: string; text: string }>>([
     { type: 'sys', text: '✦ Hello! I can help you edit sections, add requirements, and refine your BRD.' }
   ]);
   const [aiProcessing, setAiProcessing] = useState(false);
   const [gmailToken, setGmailToken] = useState<string | null>(null);
-  const [realEmails, setRealEmails] = useState<any[]>([]);
+  const [realEmails, setRealEmails] = useState<GmailMessage[]>([]);
   const [fetchingMails, setFetchingMails] = useState(false);
+
+  const fetchRealMails = useCallback(async () => {
+    if (!gmailToken) return;
+    setFetchingMails(true);
+    try {
+      const res = await fetch(`/api/gmail?token=${gmailToken}`);
+      const data = await res.json();
+      if (data.messages && data.messages.length > 0) {
+        setRealEmails(data.messages);
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+    } finally {
+      setFetchingMails(false);
+    }
+  }, [gmailToken]);
 
   const handleLogin = (name: string, isSocial?: boolean, token?: string) => {
     setUser({ name, avatar: name.slice(0, 2).toUpperCase() });
@@ -84,7 +101,7 @@ export default function Home() {
     if (gmailToken && integrations.gmail && realEmails.length === 0) {
       fetchRealMails();
     }
-  }, [gmailToken, integrations.gmail]);
+  }, [gmailToken, integrations.gmail, realEmails.length, fetchRealMails]);
 
   const toggleIntegration = (name: string) => {
     if (name === 'gmail' && !integrations.gmail && !gmailToken) {
@@ -127,38 +144,49 @@ export default function Home() {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const fetchRealMails = async () => {
-    if (!gmailToken) return;
-    setFetchingMails(true);
-    try {
-      const res = await fetch(`/api/gmail?token=${gmailToken}`);
-      const data = await res.json();
-      if (data.messages && data.messages.length > 0) {
-        setRealEmails(data.messages);
-      }
-    } catch (err) {
-      console.error('Fetch error:', err);
-    } finally {
-      setFetchingMails(false);
-    }
-  };
 
-  const generateBRD = (formData: any) => {
+
+  const generateBRD = (formData: GeneratorFormData) => {
     setGenerating(true);
+
+    // Simple parsing logic for requirements
+    const lines = formData.rawReqs.split('\n').filter(l => l.trim().length > 10);
+    const parsedReqs = lines.map((line, idx) => ({
+      id: `FR-${String(idx + 1).padStart(3, '0')}`,
+      description: line.trim(),
+      priority: idx % 3 === 0 ? 'High' as const : (idx % 2 === 0 ? 'Medium' as const : 'Low' as const)
+    }));
+
+    // Realistic content templates
+    const getSectionContent = (id: string) => {
+      switch (id) {
+        case 'executive_summary':
+          return `<p><strong>Project Overview:</strong> ${formData.projectName} is designed to address key challenges in the current workflow. ${formData.projectDesc}</p><p>This initiative focuses on streamlining operations and enhancing stakeholder engagement through automated analysis and intelligent reporting.</p>`;
+        case 'business_objectives':
+          return `<p>The primary objective of ${formData.projectName} is to improve efficiency by at least 30% within the first six months. Key goals include:</p><ul><li>Centralization of data sources</li><li>Reduction in manual document processing time</li><li>Improved accuracy of business requirements documentation</li></ul>`;
+        case 'functional_requirements':
+          return `<p>The following requirements specify the necessary behavior and capabilities of ${formData.projectName}. They have been derived from initial stakeholder interviews and internal documentation.</p>`;
+        case 'stakeholder_analysis':
+          return `<p>Key stakeholders identified for this project include Project Managers, Business Analysts, and Technical Leads. The system must cater to varying levels of technical expertise and provide intuitive interfaces for collaborative editing.</p>`;
+        default:
+          return `<p>Standard documentation for the ${id.replace(/_/g, ' ')} phase. This section covers the necessary protocols and standards required for successful project implementation based on the provided inputs: ${formData.projectDesc.slice(0, 100)}...</p>`;
+      }
+    };
+
     // Simulate generation
     setTimeout(() => {
-      const newBRD = {
+      const newBRD: BRD = {
         projectName: formData.projectName,
         createdAt: Date.now(),
         conflicts: 0,
         sections: formData.sections.map((s: string) => ({
           id: s,
           title: s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-          content: `<p>This is the generated content for ${s}. Based on your input: ${formData.projectDesc}</p>`,
-          requirements: s.includes('requirements') ? [
-            { id: 'FR-001', description: 'The system shall process inputs automatically.', priority: 'High' },
-            { id: 'FR-002', description: 'Stakeholders must be able to export reports.', priority: 'Medium' }
-          ] : null
+          content: getSectionContent(s),
+          requirements: s.includes('requirement') ? (parsedReqs.length > 0 ? parsedReqs : [
+            { id: 'FR-001', description: 'The system shall process inputs automatically.', priority: 'High' as const },
+            { id: 'FR-002', description: 'Stakeholders must be able to export reports.', priority: 'Medium' as const }
+          ]) : []
         }))
       };
       setBrds([...brds, newBRD]);
@@ -168,7 +196,7 @@ export default function Home() {
     }, 3000);
   };
 
-  const updateBRD = (index: number, updatedFields: any) => {
+  const updateBRD = (index: number, updatedFields: Partial<BRD>) => {
     setBrds(prev => prev.map((brd, i) => i === index ? { ...brd, ...updatedFields } : brd));
   };
 
@@ -196,13 +224,13 @@ export default function Home() {
         else if (lower.includes('add requirement') || lower.includes('new requirement')) {
           const reqText = text.split(/requirement/i)[1]?.trim();
           if (reqText) {
-            const updatedSections = currentBRD.sections.map((s: any) => {
+            const updatedSections = currentBRD.sections.map((s) => {
               if (s.id.includes('functional_requirements')) {
                 return {
                   ...s,
                   requirements: [
                     ...(s.requirements || []),
-                    { id: `FR-00${(s.requirements?.length || 0) + 1}`, description: reqText, priority: 'Medium' }
+                    { id: `FR-00${(s.requirements?.length || 0) + 1}`, description: reqText, priority: 'Medium' as const }
                   ]
                 };
               }
@@ -266,7 +294,7 @@ export default function Home() {
         <Editor
           brd={currentBRDIndex !== null ? brds[currentBRDIndex] : null}
           onAIMessage={handleAIMessage}
-          onUpdateBRD={(fields: any) => currentBRDIndex !== null && updateBRD(currentBRDIndex, fields)}
+          onUpdateBRD={(fields: Partial<BRD>) => currentBRDIndex !== null && updateBRD(currentBRDIndex, fields)}
           aiMessages={aiMessages}
           aiProcessing={aiProcessing}
         />

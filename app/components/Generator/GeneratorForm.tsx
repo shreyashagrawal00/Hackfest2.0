@@ -2,23 +2,24 @@
 
 import React, { useState } from 'react';
 import './generator.css';
+import { GmailMessage, GeneratorFormData, IndexedFile } from '@/app/types';
 
 interface GeneratorFormProps {
-  onGenerate: (data: any) => void;
+  onGenerate: (data: GeneratorFormData) => void;
   generating: boolean;
   integrations: { [key: string]: boolean };
-  uploadedFiles: any[];
-  realEmails?: any[];
+  uploadedFiles: IndexedFile[];
+  realEmails?: GmailMessage[];
   fetchingMails?: boolean;
 }
 
 export default function GeneratorForm({ onGenerate, generating, integrations, uploadedFiles, realEmails, fetchingMails }: GeneratorFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<GeneratorFormData>({
     projectName: '',
     projectDesc: '',
     rawReqs: '',
     sources: ['manual'],
-    sections: ['executive_summary' as any, 'business_objectives', 'stakeholder_analysis', 'functional_requirements', 'non_functional_requirements', 'assumptions', 'success_metrics', 'timeline']
+    sections: ['executive_summary', 'business_objectives', 'stakeholder_analysis', 'functional_requirements', 'non_functional_requirements', 'assumptions', 'success_metrics', 'timeline']
   });
 
   const loadTemplate = () => {
@@ -55,6 +56,16 @@ FW: Quarterly Newsletter - Internal Only
     conflict_analysis: 'Conflict Analysis'
   };
 
+  const clearForm = () => {
+    setFormData({
+      projectName: '',
+      projectDesc: '',
+      rawReqs: '',
+      sources: ['manual'],
+      sections: ['executive_summary', 'business_objectives', 'stakeholder_analysis', 'functional_requirements', 'non_functional_requirements', 'assumptions', 'success_metrics', 'timeline']
+    });
+  };
+
   const toggleSource = (src: string) => {
     if (src === 'gmail' && !integrations.gmail) return;
     if (src === 'slack' && !integrations.slack) return;
@@ -78,27 +89,113 @@ FW: Quarterly Newsletter - Internal Only
     }));
   };
 
+  const magicFill = () => {
+    // 1. Prepare default "High Quality" content
+    let name = 'SmartInventory_X1_Control';
+    let desc = 'Development of an AI-driven inventory optimization layer that integrates with existing ERP systems via REST APIs. The goal is to reduce stockouts by 40% and optimize warehouse footprint by implementing predictive demand forecasting.';
+    let reqs = `[MAGIC_FILL_ACTIVE]: Context extracted from project-relevant streams...
+
+---
+EMAIL: sarah.chen@logistics-core.biz
+Subject: Critical Bottleneck in Q3 Fulfillment
+
+Team, we are seeing a 15% lag in real-time sync between the warehouse floor and the POS system. For the X1 module, the dashboard must support sub-second latency for inventory lookups. Also, the mobile app needs an offline-first mode for scan-ins in low-connectivity zones.
+
+---
+MEETING NOTES: Architecture Sync (2/21/2026)
+- The forecasting engine should use a Transformer-based model (LSTM fallback).
+- Data privacy: All PII must be encrypted at rest (AES-256).
+- Scalability: System must handle 50k SKU updates per minute during peak loads.
+
+---
+TRANSCRIPT: User Research Session
+- "I need to be able to see the audit trail for every single stock movement."
+- "The UI shouldn't feel like a spreadsheet. Give me a visual map of the floor."`;
+
+    // 2. Override if we have REAL Gmail data
+    if (realEmails && realEmails.length > 0) {
+      name = `BRD_Input_${realEmails[0].subject.replace(/RE:|FW:/gi, '').trim() || 'Gmail_Project'}`;
+      desc = `Sophisticated extraction active. Analyzing ${realEmails.length} communication threads to synthesize business requirements and stakeholder constraints. Focus: ${realEmails[0].subject}.`;
+      reqs = realEmails.map(m => `[GMAIL_SIGNAL]: ${m.subject}\nContent: ${m.snippet || 'Body content filtered for noise.'}`).join('\n\n---\n\n');
+    }
+    // 3. Override if we have UPLOADED files
+    else if (uploadedFiles.length > 0) {
+      name = `BRD_Analysis_${uploadedFiles[0].name.split('.')[0]}`;
+      desc = `Comprehensive analysis of ${uploadedFiles.length} uploaded source document(s). Requirements are being mapped against organizational standards and existing infrastructure patterns identified in ${uploadedFiles[0].name}.`;
+      reqs = `[DOC_SCAN_ACTIVE]: Context extraction from ${uploadedFiles.map(f => f.name).join(', ')}
+
+---
+- Identified 12 potential functional constraints.
+- Mapped 4 security requirements regarding data residency.
+- Extracted success metrics from the executive summary portion of ${uploadedFiles[0].name}.`;
+    }
+
+    setFormData({
+      ...formData,
+      projectName: name,
+      projectDesc: desc,
+      rawReqs: reqs,
+      sources: Array.from(new Set([...formData.sources, realEmails?.length ? 'gmail' : (uploadedFiles.length ? 'docs' : 'manual')]))
+    });
+  };
+
   return (
     <div className="gen-layout">
       <div className="gen-main">
         <div className="dash-hero-row" style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="page-title">Generate <em>BRD</em></div>
-          <button
-            className="sbtn"
-            onClick={loadTemplate}
-            style={{
-              background: 'var(--cream)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              padding: '6px 14px',
-              color: 'var(--sage)',
-              fontFamily: "'DM Mono', monospace",
-              fontSize: '11px',
-              cursor: 'pointer'
-            }}
-          >
-            📥 Load Dataset Template
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              className="sbtn"
+              onClick={magicFill}
+              style={{
+                background: 'var(--gold)',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '6px 14px',
+                color: '#000',
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '11px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(196, 151, 62, 0.2)'
+              }}
+            >
+              ✦ Magic Fill
+            </button>
+            <button
+              className="sbtn"
+              onClick={loadTemplate}
+              style={{
+                background: 'var(--cream)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                padding: '6px 14px',
+                color: 'var(--sage)',
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '11px',
+                cursor: 'pointer'
+              }}
+            >
+              📥 Load Template
+            </button>
+            <button
+              className="sbtn"
+              onClick={clearForm}
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                padding: '6px 14px',
+                color: 'var(--mist)',
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '11px',
+                cursor: 'pointer'
+              }}
+            >
+              ✕ Clear
+            </button>
+          </div>
         </div>
 
         <div className="form-group">
@@ -204,7 +301,7 @@ FW: Quarterly Newsletter - Internal Only
               ) : integrations.gmail && realEmails && realEmails.length > 0 ? (
                 <div className="real-signal-list">
                   <div style={{ color: 'var(--gold)', marginBottom: '8px', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '0.1em' }}>Live Gmail Feed Active</div>
-                  {realEmails.map((msg: any) => (
+                  {realEmails.map((msg) => (
                     <div key={msg.id} style={{ marginBottom: '6px', borderLeft: '1px solid var(--sage)', paddingLeft: '8px', opacity: 0.8 }}>
                       {msg.subject}
                     </div>
@@ -221,7 +318,15 @@ FW: Quarterly Newsletter - Internal Only
   );
 }
 
-function SourceChip({ name, active, onClick, icon, disabled }: any) {
+interface SourceChipProps {
+  name: string;
+  active: boolean;
+  onClick: () => void;
+  icon: string;
+  disabled?: boolean;
+}
+
+function SourceChip({ name, active, onClick, icon, disabled }: SourceChipProps) {
   return (
     <div
       className={`chip ${active ? 'sel' : ''}`}

@@ -2,15 +2,16 @@
 
 import React from 'react';
 import './integrations.css';
+import { IndexedFile, GmailMessage } from '@/app/types';
 
 interface IntegrationsProps {
   integrations: { [key: string]: boolean };
-  uploadedFiles: any[];
+  uploadedFiles: IndexedFile[];
   onToggleIntegration: (name: string) => void;
   onAddFiles: (files: File[]) => void;
   onRemoveFile: (index: number) => void;
   onFetchGmail: () => void;
-  realEmails: any[];
+  realEmails: GmailMessage[];
   fetchingMails?: boolean;
   onNavigateToGenerate: () => void;
 }
@@ -166,7 +167,20 @@ export default function Integrations({
   );
 }
 
-function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle, bgColor, realEmails, fetching }: any) {
+interface IntegrationCardProps {
+  id: string;
+  icon: string;
+  name: string;
+  desc: string;
+  connected: boolean;
+  connecting: boolean;
+  onToggle: () => void;
+  bgColor: string;
+  realEmails?: GmailMessage[];
+  fetching?: boolean;
+}
+
+function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle, bgColor, realEmails, fetching }: IntegrationCardProps) {
   return (
     <div className={`int-card ${connected ? 'connected' : ''} ${connecting ? 'connecting' : ''}`} onClick={!connecting ? onToggle : undefined}>
       <div className="int-head">
@@ -186,7 +200,7 @@ function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle
               Scanning mailboxes...
             </div>
           ) : realEmails && realEmails.length > 0 ? (
-            realEmails.map((msg: any) => (
+            realEmails.map((msg) => (
               <div key={msg.id} className="preview-item">
                 <span className="dot"></span> {msg.subject}
               </div>

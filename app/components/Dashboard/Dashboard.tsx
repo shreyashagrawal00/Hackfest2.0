@@ -2,11 +2,12 @@
 
 import React from 'react';
 import './dashboard.css';
+import { BRD, IndexedFile } from '@/app/types';
 
 interface DashboardProps {
-  brds: any[];
+  brds: BRD[];
   integrations: { [key: string]: boolean };
-  uploadedFiles: any[];
+  uploadedFiles: IndexedFile[];
   onNavigateToGenerate: () => void;
   onNavigateToIntegrations: () => void;
   onOpenBRD: (index: number) => void;
@@ -41,22 +42,22 @@ export default function Dashboard({
         </div>
 
         <div className="stat-row">
-          <div className="stat-card">
+          <div className="stat-card" style={{ cursor: 'default' }}>
             <div className="stat-lbl">Total BRDs</div>
             <div className="stat-val">{totalBRDs}</div>
             <div className="stat-note">{totalBRDs === 0 ? 'none yet' : `+${totalBRDs} generated`}</div>
           </div>
-          <div className="stat-card">
+          <div className="stat-card" onClick={onNavigateToIntegrations} style={{ cursor: 'pointer' }}>
             <div className="stat-lbl">Sources Connected</div>
             <div className="stat-val">{sourcesCount}</div>
             <div className="stat-note">integrations active</div>
           </div>
-          <div className="stat-card">
+          <div className="stat-card" onClick={onNavigateToIntegrations} style={{ cursor: 'pointer' }}>
             <div className="stat-lbl">Files Uploaded</div>
             <div className="stat-val">{filesCount}</div>
             <div className="stat-note">ready to process</div>
           </div>
-          <div className="stat-card">
+          <div className="stat-card" style={{ cursor: 'default' }}>
             <div className="stat-lbl">Conflicts Found</div>
             <div className="stat-val" style={{ color: 'var(--rust)' }}>{conflictsCount}</div>
             <div className="stat-note" style={{ color: 'var(--mist)' }}>across all docs</div>
@@ -135,7 +136,16 @@ export default function Dashboard({
   );
 }
 
-function SourceItem({ icon, name, connected, count, bgColor, isLast }: any) {
+interface SourceItemProps {
+  icon: string;
+  name: string;
+  connected: boolean;
+  count: string;
+  bgColor: string;
+  isLast?: boolean;
+}
+
+function SourceItem({ icon, name, connected, count, bgColor, isLast }: SourceItemProps) {
   return (
     <div className="src-item" style={isLast ? { borderBottom: 'none', paddingBottom: 0 } : {}}>
       <div className="src-icon" style={{ background: bgColor }}>{icon}</div>

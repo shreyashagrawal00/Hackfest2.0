@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import './editor.css';
+import { BRD } from '@/app/types';
 
 interface EditorProps {
-  brd: any;
+  brd: BRD | null;
   onAIMessage: (msg: string) => void;
-  onUpdateBRD: (fields: any) => void;
-  aiMessages: any[];
+  onUpdateBRD: (fields: Partial<BRD>) => void;
+  aiMessages: Array<{ type: string; text: string }>;
   aiProcessing: boolean;
 }
 
@@ -16,6 +17,11 @@ export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiPr
   const [aiInput, setAiInput] = useState('');
   const [editMode, setEditMode] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [aiMessages]);
 
   if (!brd) {
     return (
@@ -38,7 +44,6 @@ export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiPr
   const handleExport = async () => {
     setExporting(true);
     try {
-      // @ts-ignore
       const html2pdf = (await import('html2pdf.js')).default;
       const element = document.getElementById('brd-content');
       if (!element) throw new Error('Document content not found');
@@ -60,8 +65,8 @@ export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiPr
     }
   };
 
-  const handleContentBlur = (sectionId: string, e: any) => {
-    const updatedSections = brd.sections.map((s: any) =>
+  const handleContentBlur = (sectionId: string, e: React.FocusEvent<HTMLDivElement>) => {
+    const updatedSections = brd.sections.map((s) =>
       s.id === sectionId ? { ...s, content: e.target.innerHTML } : s
     );
     onUpdateBRD({ sections: updatedSections });
@@ -72,7 +77,7 @@ export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiPr
       {/* Section nav */}
       <nav className="doc-nav">
         <div className="doc-nav-title">Sections</div>
-        {brd.sections.map((sec: any, i: number) => (
+        {brd.sections.map((sec, i: number) => (
           <div
             key={sec.id}
             className={`doc-nav-item ${activeSection === sec.id ? 'sec-active' : ''}`}
@@ -126,7 +131,7 @@ export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiPr
             {brd.conflicts > 0 && <div className="doc-meta-item" style={{ color: 'var(--rust)' }}>⚠ <strong>{brd.conflicts} Conflicts</strong></div>}
           </div>
 
-          {brd.sections.map((sec: any, i: number) => (
+          {brd.sections.map((sec, i: number) => (
             <div key={sec.id} className="doc-section" id={`sec-${sec.id}`}>
               <div className="doc-section-title">
                 <span className="sec-num">§{i + 1}</span>
@@ -144,7 +149,7 @@ export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiPr
                 <table className="req-table">
                   <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
                   <tbody>
-                    {sec.requirements.map((r: any) => (
+                    {sec.requirements.map((r) => (
                       <tr key={r.id}>
                         <td className="req-id">{r.id}</td>
                         <td>{r.description || r.text}</td>
@@ -176,6 +181,7 @@ export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiPr
             </div>
           ))}
           {aiProcessing && <div className="ai-typing"><span></span><span></span><span></span></div>}
+          <div ref={messagesEndRef} />
         </div>
         <div className="ai-input-row">
           <textarea

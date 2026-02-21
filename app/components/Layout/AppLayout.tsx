@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import './layout.css';
 
 interface LayoutProps {
@@ -58,7 +58,9 @@ export default function AppLayout({ children, user, onLogout, activeTab, onTabCh
         </div>
       </header>
       <main className="main-content">
-        {children}
+        <div key={activeTab} className="tab-anim-wrap">
+          {children}
+        </div>
       </main>
     </div>
   );

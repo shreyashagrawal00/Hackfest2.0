@@ -252,6 +252,82 @@
   animation: pulse 2s infinite;
 }
 
+@media print {
+  @page {
+    margin: 20mm;
+  }
+
+  .editor-layout {
+    display: block !important;
+    height: auto !important;
+  }
+
+  .doc-nav,
+  .ai-panel,
+  .doc-toolbar,
+  .export-btn,
+  .topbar {
+    display: none !important;
+  }
+
+  .doc-body {
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+    width: 100% !important;
+  }
+
+  .doc-section {
+    page-break-inside: avoid;
+    margin-bottom: 40px;
+    border: none !important;
+  }
+
+  .doc-h1 {
+    font-size: 28pt !important;
+    margin-top: 0;
+  }
+
+  .doc-section-title {
+    color: #4A5D4E !important;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    font-size: 14pt !important;
+  }
+
+  .req-table th {
+    background: #f8f9f8 !important;
+    color: #666 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .pbadge {
+    border: 1px solid #ddd !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .p-high {
+    background: #fdf2f0 !important;
+    color: #a8492a !important;
+  }
+
+  .p-med {
+    background: #fef9ed !important;
+    color: #8a6920 !important;
+  }
+
+  .p-low {
+    background: #f4f7f5 !important;
+    color: #3d5a47 !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+}
+
 @keyframes pulse {
 
   0%,

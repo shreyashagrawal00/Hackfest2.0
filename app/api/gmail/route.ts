@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     // 2. Fetch details for each message to get Subject lines
     const messageDetails = await Promise.all(
-      listData.messages.map(async (msg: any) => {
+      listData.messages.map(async (msg: { id: string }) => {
         const detailRes = await fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}`,
           {
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
         const detailData = await detailRes.json();
 
         const subject = detailData.payload.headers.find(
-          (h: any) => h.name.toLowerCase() === 'subject'
+          (h: { name: string; value: string }) => h.name.toLowerCase() === 'subject'
         )?.value || '(No Subject)';
 
         return {
@@ -53,8 +53,9 @@ export async function GET(req: NextRequest) {
     );
 
     return NextResponse.json({ messages: messageDetails });
-  } catch (err: any) {
-    console.error('CRITICAL GMAIL API ERROR:', err);
-    return NextResponse.json({ error: err.message || 'Failed to access Gmail API' }, { status: 500 });
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error('CRITICAL GMAIL API ERROR:', error);
+    return NextResponse.json({ error: error.message || 'Failed to access Gmail API' }, { status: 500 });
   }
 }
