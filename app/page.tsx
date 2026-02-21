@@ -18,7 +18,37 @@ export default function Home() {
     if (session) {
       setUser({ name: session.name, avatar: session.name.slice(0, 2).toUpperCase() });
     }
+
+    // Load GIS script for OAuth
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if (window.google && window.google.accounts) {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+          scope: 'https://www.googleapis.com/auth/gmail.readonly',
+          callback: (tokenResponse: any) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              setGmailToken(tokenResponse.access_token);
+              setIntegrations(prev => ({ ...prev, gmail: true }));
+            }
+          },
+        });
+        setTokenClient(client);
+      }
+    };
+
+    return () => {
+      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (existingScript) document.body.removeChild(existingScript);
+    };
   }, []);
+
+  const [tokenClient, setTokenClient] = useState<any>(null);
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [integrations, setIntegrations] = useState({ gmail: false, slack: false, fireflies: false });
@@ -32,6 +62,7 @@ export default function Home() {
   const [aiProcessing, setAiProcessing] = useState(false);
   const [gmailToken, setGmailToken] = useState<string | null>(null);
   const [realEmails, setRealEmails] = useState<any[]>([]);
+  const [fetchingMails, setFetchingMails] = useState(false);
 
   const handleLogin = (name: string, isSocial?: boolean, token?: string) => {
     setUser({ name, avatar: name.slice(0, 2).toUpperCase() });
@@ -56,6 +87,11 @@ export default function Home() {
   }, [gmailToken, integrations.gmail]);
 
   const toggleIntegration = (name: string) => {
+    if (name === 'gmail' && !integrations.gmail && !gmailToken) {
+      handleConnectGmail();
+      return;
+    }
+
     setIntegrations(prev => {
       const newState = { ...prev, [name]: !prev[name as keyof typeof integrations] };
       // If Gmail is being turned off, clear its data
@@ -65,6 +101,14 @@ export default function Home() {
       }
       return newState;
     });
+  };
+
+  const handleConnectGmail = () => {
+    if (tokenClient) {
+      tokenClient.requestAccessToken();
+    } else {
+      console.error('Google Token Client not ready');
+    }
   };
 
   const addFiles = (files: File[]) => {
@@ -84,22 +128,18 @@ export default function Home() {
   };
 
   const fetchRealMails = async () => {
-    if (!gmailToken) {
-      console.log('No GMAIL_TOKEN found in state.');
-      return;
-    }
-    console.log('Fetching real mails with token ending in:', gmailToken.slice(-5));
+    if (!gmailToken) return;
+    setFetchingMails(true);
     try {
       const res = await fetch(`/api/gmail?token=${gmailToken}`);
       const data = await res.json();
-      console.log('API Response:', data);
       if (data.messages && data.messages.length > 0) {
         setRealEmails(data.messages);
-      } else {
-        console.warn('API returned or found no messages.');
       }
     } catch (err) {
       console.error('Fetch error:', err);
+    } finally {
+      setFetchingMails(false);
     }
   };
 
@@ -208,6 +248,7 @@ export default function Home() {
           onRemoveFile={removeFile}
           onFetchGmail={fetchRealMails}
           realEmails={realEmails}
+          fetchingMails={fetchingMails}
           onNavigateToGenerate={() => setActiveTab('generate')}
         />
       )}
@@ -218,6 +259,7 @@ export default function Home() {
           integrations={integrations}
           uploadedFiles={uploadedFiles}
           realEmails={realEmails}
+          fetchingMails={fetchingMails}
         />
       )}
       {activeTab === 'editor' && (

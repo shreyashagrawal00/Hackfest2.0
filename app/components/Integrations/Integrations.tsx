@@ -11,6 +11,7 @@ interface IntegrationsProps {
   onRemoveFile: (index: number) => void;
   onFetchGmail: () => void;
   realEmails: any[];
+  fetchingMails?: boolean;
   onNavigateToGenerate: () => void;
 }
 
@@ -22,6 +23,7 @@ export default function Integrations({
   onRemoveFile,
   onFetchGmail,
   realEmails,
+  fetchingMails,
   onNavigateToGenerate
 }: IntegrationsProps) {
   const [connectingId, setConnectingId] = React.useState<string | null>(null);
@@ -81,6 +83,7 @@ export default function Integrations({
             onToggle={() => handleToggle('gmail')}
             bgColor="rgba(234,67,53,0.1)"
             realEmails={realEmails}
+            fetching={fetchingMails}
           />
           <IntegrationCard
             id="slack"
@@ -163,7 +166,7 @@ export default function Integrations({
   );
 }
 
-function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle, bgColor, realEmails }: any) {
+function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle, bgColor, realEmails, fetching }: any) {
   return (
     <div className={`int-card ${connected ? 'connected' : ''} ${connecting ? 'connecting' : ''}`} onClick={!connecting ? onToggle : undefined}>
       <div className="int-head">
@@ -174,14 +177,23 @@ function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle
       </div>
       <div className="int-name">{name}</div>
       <div className="int-desc">{desc}</div>
-      {connected && id === 'gmail' && realEmails && realEmails.length > 0 && (
+      {connected && id === 'gmail' && (
         <div className="real-data-preview">
           <div className="preview-label">Latest Signals Identified:</div>
-          {realEmails.map((msg: any) => (
-            <div key={msg.id} className="preview-item">
-              <span className="dot"></span> {msg.subject}
+          {fetching ? (
+            <div className="preview-item" style={{ opacity: 0.5 }}>
+              <span className="spinner" style={{ width: '10px', height: '10px', borderTopColor: 'var(--gold)' }}></span>
+              Scanning mailboxes...
             </div>
-          ))}
+          ) : realEmails && realEmails.length > 0 ? (
+            realEmails.map((msg: any) => (
+              <div key={msg.id} className="preview-item">
+                <span className="dot"></span> {msg.subject}
+              </div>
+            ))
+          ) : (
+            <div className="preview-item" style={{ fontSize: '10px', opacity: 0.6 }}>No project-relevant emails found yet.</div>
+          )}
         </div>
       )}
       {connected && <div className="int-sync">↻ Synced just now</div>}

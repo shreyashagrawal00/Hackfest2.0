@@ -9,9 +9,10 @@ interface GeneratorFormProps {
   integrations: { [key: string]: boolean };
   uploadedFiles: any[];
   realEmails?: any[];
+  fetchingMails?: boolean;
 }
 
-export default function GeneratorForm({ onGenerate, generating, integrations, uploadedFiles, realEmails }: GeneratorFormProps) {
+export default function GeneratorForm({ onGenerate, generating, integrations, uploadedFiles, realEmails, fetchingMails }: GeneratorFormProps) {
   const [formData, setFormData] = useState({
     projectName: '',
     projectDesc: '',
@@ -191,11 +192,16 @@ FW: Quarterly Newsletter - Internal Only
           )}
         </div>
 
-        {(integrations.gmail && realEmails && realEmails.length > 0) || integrations.fireflies ? (
+        {(integrations.gmail && (fetchingMails || (realEmails && realEmails.length > 0))) || integrations.fireflies ? (
           <>
             <div className="section-lbl" style={{ marginTop: '20px' }}>Intelligence Signal</div>
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', fontSize: '11px', color: 'var(--mist)', fontFamily: "'DM Mono', monospace" }}>
-              {integrations.gmail && realEmails && realEmails.length > 0 ? (
+              {fetchingMails ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="spinner" style={{ width: '12px', height: '12px', borderTopColor: 'var(--gold)' }}></span>
+                  <span style={{ color: 'var(--gold)' }}>Scanning project-relevant emails...</span>
+                </div>
+              ) : integrations.gmail && realEmails && realEmails.length > 0 ? (
                 <div className="real-signal-list">
                   <div style={{ color: 'var(--gold)', marginBottom: '8px', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '0.1em' }}>Live Gmail Feed Active</div>
                   {realEmails.map((msg: any) => (

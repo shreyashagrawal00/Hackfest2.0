@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing access token' }, { status: 400 });
   }
 
+  // Debug: Forced re-compile at 2026-02-21T21:40:00Z
   try {
     // 1. Fetch the list of latest messages
     const listRes = await fetch(
@@ -17,7 +18,11 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    if (!listRes.ok) throw new Error('Failed to fetch messages');
+    if (!listRes.ok) {
+      const errorBody = await listRes.text();
+      console.error(`GMAIL LIST ERROR: ${listRes.status}`, errorBody);
+      throw new Error(`Failed to fetch messages: ${listRes.status} ${errorBody}`);
+    }
     const listData = await listRes.json();
 
     if (!listData.messages || listData.messages.length === 0) {
