@@ -6,13 +6,16 @@ import './editor.css';
 interface EditorProps {
   brd: any;
   onAIMessage: (msg: string) => void;
+  onUpdateBRD: (fields: any) => void;
   aiMessages: any[];
   aiProcessing: boolean;
 }
 
-export default function Editor({ brd, onAIMessage, aiMessages, aiProcessing }: EditorProps) {
+export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiProcessing }: EditorProps) {
   const [activeSection, setActiveSection] = useState(brd?.sections[0]?.id || '');
   const [aiInput, setAiInput] = useState('');
+  const [editMode, setEditMode] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   if (!brd) {
     return (
@@ -30,6 +33,21 @@ export default function Editor({ brd, onAIMessage, aiMessages, aiProcessing }: E
       onAIMessage(aiInput);
       setAiInput('');
     }
+  };
+
+  const handleExport = () => {
+    setExporting(true);
+    setTimeout(() => {
+      setExporting(false);
+      alert('PDF Exported successfully! (Simulated)');
+    }, 2500);
+  };
+
+  const handleContentBlur = (sectionId: string, e: any) => {
+    const updatedSections = brd.sections.map((s: any) =>
+      s.id === sectionId ? { ...s, content: e.target.innerHTML } : s
+    );
+    onUpdateBRD({ sections: updatedSections });
   };
 
   return (
@@ -54,14 +72,33 @@ export default function Editor({ brd, onAIMessage, aiMessages, aiProcessing }: E
       {/* Document body */}
       <div className="doc-body">
         <div className="doc-toolbar">
-          <button className="tbtn ton">Edit</button>
-          <button className="tbtn">Preview</button>
+          <button
+            className={`tbtn ${editMode ? 'ton' : ''}`}
+            onClick={() => setEditMode(true)}
+          >
+            Edit
+          </button>
+          <button
+            className={`tbtn ${!editMode ? 'ton' : ''}`}
+            onClick={() => setEditMode(false)}
+          >
+            Preview
+          </button>
           <div className="tsep"></div>
           <span className="doc-title-meta">{brd.projectName} · v1.0</span>
-          <button className="export-btn">Export PDF</button>
+          <button className="export-btn" onClick={handleExport} disabled={exporting}>
+            {exporting ? <span className="spinner" style={{ borderTopColor: 'var(--gold)' }}></span> : 'Export PDF'}
+          </button>
         </div>
 
-        <div contentEditable suppressContentEditableWarning={true} className="doc-h1">{brd.projectName}</div>
+        <div
+          contentEditable={editMode}
+          suppressContentEditableWarning={true}
+          className="doc-h1"
+          onBlur={(e) => onUpdateBRD({ projectName: e.target.innerText })}
+        >
+          {brd.projectName}
+        </div>
 
         <div className="doc-meta-row">
           <div className="doc-meta-item">Status <strong style={{ color: 'var(--gold)' }}>Draft</strong></div>
@@ -77,10 +114,11 @@ export default function Editor({ brd, onAIMessage, aiMessages, aiProcessing }: E
               {sec.title}
             </div>
             <div
-              className="doc-content"
-              contentEditable
+              className={`doc-content ${!editMode ? 'readonly' : ''}`}
+              contentEditable={editMode}
               suppressContentEditableWarning={true}
               dangerouslySetInnerHTML={{ __html: sec.content }}
+              onBlur={(e) => handleContentBlur(sec.id, e)}
             />
             {sec.requirements && (
               <table className="req-table">

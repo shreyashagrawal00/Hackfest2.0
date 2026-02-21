@@ -1,11 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 import './login.css';
 import { auth } from '../../utils/auth';
 
 interface LoginProps {
-  onLogin: (name: string) => void;
+  onLogin: (name: string, isSocial?: boolean) => void;
 }
 
 export default function Login({ onLogin }: LoginProps) {
@@ -17,12 +23,46 @@ export default function Login({ onLogin }: LoginProps) {
   const [showAccountSelector, setShowAccountSelector] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState('');
 
+  useEffect(() => {
+    // Load Google Identity Services script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+          callback: handleGoogleResponse,
+        });
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleGoogleResponse = (response: any) => {
+    try {
+      // Decode JWT (standard way for Google One Tap / Button)
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      const user = JSON.parse(jsonPayload);
+      onLogin(user.name, true);
+      auth.setSession({ email: user.email, name: user.name });
+    } catch (err) {
+      setError('Failed to process Google login.');
+    }
+  };
+
   const mockAccounts = {
-    'Google': [
-      { name: 'Shreyash Agrawal', email: 'shreyash@gmail.com', avatar: 'SA' },
-      { name: 'Admin User', email: 'admin@company.com', avatar: 'AD' },
-      { name: 'Product Manager', email: 'pm@hackfest.org', avatar: 'PM' }
-    ],
     'Slack': [
       { name: 'Shreyash (Slack)', email: 'shreyash@slack.com', avatar: 'SS' }
     ]
@@ -61,6 +101,14 @@ export default function Login({ onLogin }: LoginProps) {
   };
 
   const handleOAuthClick = (provider: string) => {
+    if (provider === 'Google') {
+      if (window.google) {
+        window.google.accounts.id.prompt(); // Trigger real Google Login prompt
+      } else {
+        setError('Google login not initialized. Please refresh.');
+      }
+      return;
+    }
     setSelectedProvider(provider);
     setShowAccountSelector(true);
   };

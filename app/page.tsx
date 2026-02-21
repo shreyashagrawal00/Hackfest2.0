@@ -31,9 +31,12 @@ export default function Home() {
   ]);
   const [aiProcessing, setAiProcessing] = useState(false);
 
-  const handleLogin = (name: string) => {
+  const handleLogin = (name: string, isSocial?: boolean) => {
     setUser({ name, avatar: name.slice(0, 2).toUpperCase() });
     setActiveTab('dashboard');
+    if (isSocial) {
+      setIntegrations(prev => ({ ...prev, gmail: true }));
+    }
   };
 
   const handleLogout = () => {
@@ -86,14 +89,55 @@ export default function Home() {
     }, 3000);
   };
 
+  const updateBRD = (index: number, updatedFields: any) => {
+    setBrds(prev => prev.map((brd, i) => i === index ? { ...brd, ...updatedFields } : brd));
+  };
+
   const handleAIMessage = (text: string) => {
     setAiMessages(prev => [...prev, { type: 'usr', text }]);
     setAiProcessing(true);
-    // Simulate AI response
+
+    // Simulate AI response logic
     setTimeout(() => {
-      setAiMessages(prev => [...prev, { type: 'sys', text: `I've analyzed your request: "${text}". I have updated the relevant section in the document.` }]);
+      let sysResp = `I've analyzed your request: "${text}". I have updated the relevant section in the document.`;
+
+      if (currentBRDIndex !== null) {
+        const lower = text.toLowerCase();
+        const currentBRD = brds[currentBRDIndex];
+
+        // Keyword Trigger: Change Project Name
+        if (lower.includes('change name to') || lower.includes('rename project to')) {
+          const newName = text.split(/to/i)[1]?.trim().replace(/[".]/g, '');
+          if (newName) {
+            updateBRD(currentBRDIndex, { projectName: newName });
+            sysResp = `Of course! I've updated the project name to "**${newName}**".`;
+          }
+        }
+        // Keyword Trigger: Add Requirement
+        else if (lower.includes('add requirement') || lower.includes('new requirement')) {
+          const reqText = text.split(/requirement/i)[1]?.trim();
+          if (reqText) {
+            const updatedSections = currentBRD.sections.map((s: any) => {
+              if (s.id.includes('functional_requirements')) {
+                return {
+                  ...s,
+                  requirements: [
+                    ...(s.requirements || []),
+                    { id: `FR-00${(s.requirements?.length || 0) + 1}`, description: reqText, priority: 'Medium' }
+                  ]
+                };
+              }
+              return s;
+            });
+            updateBRD(currentBRDIndex, { sections: updatedSections });
+            sysResp = `Understood. I've added the new requirement: "**${reqText}**" to the Functional Requirements section.`;
+          }
+        }
+      }
+
+      setAiMessages(prev => [...prev, { type: 'sys', text: sysResp }]);
       setAiProcessing(false);
-    }, 2000);
+    }, 1500);
   };
 
   if (!user) return <Login onLogin={handleLogin} />;
@@ -136,6 +180,7 @@ export default function Home() {
         <Editor
           brd={currentBRDIndex !== null ? brds[currentBRDIndex] : null}
           onAIMessage={handleAIMessage}
+          onUpdateBRD={(fields: any) => currentBRDIndex !== null && updateBRD(currentBRDIndex, fields)}
           aiMessages={aiMessages}
           aiProcessing={aiProcessing}
         />
