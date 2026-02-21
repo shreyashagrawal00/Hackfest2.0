@@ -16,6 +16,7 @@ export default function AppLayout({ children, user, onLogout, activeTab, onTabCh
 
   return (
     <div className="app-shell">
+      <div className="noise-overlay" />
       <header className="topbar">
         <div className="logo" onClick={() => onTabChange('dashboard')}>
           BRD<em>agent</em>

@@ -2,21 +2,33 @@
 
 :root {
   --ink: #0C0C0E;
-  --paper: #F4F1EB;
-  --cream: #EDE9DF;
+  --paper: #DDD8CC;
+  --cream: #D6D1C4;
   --sage: #3D5A47;
   --sage-light: #547A62;
-  --sage-dim: rgba(61,90,71,0.12);
+  --sage-dim: rgba(61, 90, 71, 0.18);
   --gold: #C4973E;
   --gold-light: #E2B55A;
   --rust: #A8492A;
-  --mist: #7A8C96;
-  --border: rgba(12,12,14,0.1);
-  --card: #FAFAF6;
-  --shadow: 0 2px 20px rgba(12,12,14,0.08);
-  
-  --background: var(--paper);
+  --mist: #5E6E78;
+  --border: rgba(12, 12, 14, 0.18);
+  --card: #F2F0E9;
+  --shadow: 0 2px 20px rgba(12, 12, 14, 0.12);
+
+  --background: radial-gradient(circle at 50% 50%, #EBE7DC 0%, var(--paper) 100%);
   --foreground: var(--ink);
+}
+
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.045;
+  z-index: 1000;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 * {
@@ -25,14 +37,15 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
 }
 
 body {
   font-family: 'Syne', sans-serif;
-  background: var(--ink);
+  background: var(--background);
   color: var(--ink);
   display: flex;
   flex-direction: column;
@@ -50,7 +63,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.12);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 3px;
 }
 
@@ -63,7 +76,7 @@ body {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -72,5 +85,7 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
