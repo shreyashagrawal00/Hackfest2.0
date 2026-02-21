@@ -56,7 +56,15 @@ export default function Home() {
   }, [gmailToken, integrations.gmail]);
 
   const toggleIntegration = (name: string) => {
-    setIntegrations(prev => ({ ...prev, [name]: !prev[name as keyof typeof integrations] }));
+    setIntegrations(prev => {
+      const newState = { ...prev, [name]: !prev[name as keyof typeof integrations] };
+      // If Gmail is being turned off, clear its data
+      if (name === 'gmail' && !newState.gmail) {
+        setGmailToken(null);
+        setRealEmails([]);
+      }
+      return newState;
+    });
   };
 
   const addFiles = (files: File[]) => {
