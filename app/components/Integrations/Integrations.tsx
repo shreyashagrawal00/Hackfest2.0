@@ -11,6 +11,7 @@ interface IntegrationsProps {
   onRemoveFile: (index: number) => void;
   onFetchGmail: () => void;
   realEmails: any[];
+  onNavigateToGenerate: () => void;
 }
 
 export default function Integrations({
@@ -20,7 +21,8 @@ export default function Integrations({
   onAddFiles,
   onRemoveFile,
   onFetchGmail,
-  realEmails
+  realEmails,
+  onNavigateToGenerate
 }: IntegrationsProps) {
   const [connectingId, setConnectingId] = React.useState<string | null>(null);
 
@@ -148,6 +150,14 @@ export default function Integrations({
             </div>
           ))}
         </div>
+
+        {uploadedFiles.length > 0 && (
+          <div className="gen-cta">
+            <button className="gen-brd-btn" onClick={onNavigateToGenerate}>
+              ✦ Generate BRD from these Documents
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

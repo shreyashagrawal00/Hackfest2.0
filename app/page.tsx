@@ -199,6 +199,7 @@ export default function Home() {
           onRemoveFile={removeFile}
           onFetchGmail={fetchRealMails}
           realEmails={realEmails}
+          onNavigateToGenerate={() => setActiveTab('generate')}
         />
       )}
       {activeTab === 'generate' && (
