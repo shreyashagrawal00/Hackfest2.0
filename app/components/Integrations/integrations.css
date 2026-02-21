@@ -26,6 +26,11 @@
   border-color: var(--sage);
 }
 
+.int-card.connecting {
+  border-color: var(--gold);
+  cursor: wait;
+}
+
 .int-head {
   display: flex;
   align-items: center;

@@ -18,6 +18,20 @@ export default function Integrations({
   onAddFiles,
   onRemoveFile
 }: IntegrationsProps) {
+  const [connectingId, setConnectingId] = React.useState<string | null>(null);
+
+  const handleToggle = (id: string) => {
+    if (integrations[id]) {
+      onToggleIntegration(id);
+      return;
+    }
+
+    setConnectingId(id);
+    setTimeout(() => {
+      onToggleIntegration(id);
+      setConnectingId(null);
+    }, 1500);
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -56,7 +70,8 @@ export default function Integrations({
             name="Enron Email Base"
             desc="Process signals from ~500k professional emails. Advanced noise filtering for project requirements."
             connected={integrations.gmail}
-            onToggle={() => onToggleIntegration('gmail')}
+            connecting={connectingId === 'gmail'}
+            onToggle={() => handleToggle('gmail')}
             bgColor="rgba(234,67,53,0.1)"
           />
           <IntegrationCard
@@ -65,7 +80,8 @@ export default function Integrations({
             name="Slack Archive"
             desc="Ingest project-specific channels and direct messages. Extracts decision signals from chat."
             connected={integrations.slack}
-            onToggle={() => onToggleIntegration('slack')}
+            connecting={connectingId === 'slack'}
+            onToggle={() => handleToggle('slack')}
             bgColor="rgba(74,21,75,0.08)"
           />
           <IntegrationCard
@@ -74,7 +90,8 @@ export default function Integrations({
             name="AMI Transcripts"
             desc="279 meeting transcripts with abstractive summaries. Identifies stakeholder disagreements & feature prioritization."
             connected={integrations.fireflies}
-            onToggle={() => onToggleIntegration('fireflies')}
+            connecting={connectingId === 'fireflies'}
+            onToggle={() => handleToggle('fireflies')}
             bgColor="rgba(201,168,76,0.1)"
           />
         </div>
@@ -130,18 +147,19 @@ export default function Integrations({
   );
 }
 
-function IntegrationCard({ id, icon, name, desc, connected, onToggle, bgColor }: any) {
+function IntegrationCard({ id, icon, name, desc, connected, connecting, onToggle, bgColor }: any) {
   return (
-    <div className={`int-card ${connected ? 'connected' : ''}`} onClick={onToggle}>
+    <div className={`int-card ${connected ? 'connected' : ''} ${connecting ? 'connecting' : ''}`} onClick={!connecting ? onToggle : undefined}>
       <div className="int-head">
         <div className="int-ico" style={{ background: bgColor }}>{icon}</div>
         <span className={`int-badge ${connected ? 'on' : 'off'}`}>
-          {connected ? '● Connected' : 'Connect'}
+          {connecting ? <span className="spinner" style={{ borderTopColor: '#fff', width: '10px', height: '10px' }}></span> : (connected ? '● Connected' : 'Connect')}
         </span>
       </div>
       <div className="int-name">{name}</div>
       <div className="int-desc">{desc}</div>
       {connected && <div className="int-sync">↻ Synced just now</div>}
+      {connecting && <div className="int-sync" style={{ color: 'var(--mist)' }}>🔐 Establishing secure link...</div>}
     </div>
   );
 }

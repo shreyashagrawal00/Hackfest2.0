@@ -32,11 +32,25 @@ export default function Login({ onLogin }: LoginProps) {
     document.body.appendChild(script);
 
     script.onload = () => {
-      if (window.google) {
+      if (window.google && window.google.accounts) {
         window.google.accounts.id.initialize({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
           callback: handleGoogleResponse,
+          auto_select: false,
+          itp_support: true,
         });
+
+        // Render the official Google button
+        const parent = document.getElementById('google-btn-container');
+        if (parent) {
+          window.google.accounts.id.renderButton(parent, {
+            theme: 'outline',
+            size: 'large',
+            text: 'signin_with',
+            shape: 'rectangular',
+            width: 280
+          });
+        }
       }
     };
 
@@ -102,10 +116,10 @@ export default function Login({ onLogin }: LoginProps) {
 
   const handleOAuthClick = (provider: string) => {
     if (provider === 'Google') {
-      if (window.google) {
-        window.google.accounts.id.prompt(); // Trigger real Google Login prompt
-      } else {
-        setError('Google login not initialized. Please refresh.');
+      // The Google button is now rendered by the script itself
+      // We just provide a fallback error if it's not initialized
+      if (!window.google || !window.google.accounts) {
+        setError('Google login not initialized yet. Please wait a moment.');
       }
       return;
     }
@@ -192,8 +206,10 @@ export default function Login({ onLogin }: LoginProps) {
 
         <div className="login-divider">or</div>
         <div className="oauth-row">
-          <button className="oauth-btn" onClick={() => handleOAuthClick('Google')} disabled={loading}>G &nbsp;Google</button>
-          <button className="oauth-btn" onClick={() => handleOAuthClick('Slack')} disabled={loading}># &nbsp;Slack SSO</button>
+          <div id="google-btn-container" style={{ margin: '0 auto' }}></div>
+        </div>
+        <div className="oauth-row" style={{ marginTop: '12px' }}>
+          <button className="oauth-btn" style={{ width: '100%' }} onClick={() => handleOAuthClick('Slack')} disabled={loading}># &nbsp;Slack SSO</button>
         </div>
         {!loading && !success && (
           <div className="demo-hint">Demo: demo@company.com / demo123 (or enter any new email/password)</div>
