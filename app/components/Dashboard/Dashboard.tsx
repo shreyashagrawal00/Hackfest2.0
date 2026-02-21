@@ -10,6 +10,7 @@ interface DashboardProps {
   onNavigateToGenerate: () => void;
   onNavigateToIntegrations: () => void;
   onOpenBRD: (index: number) => void;
+  userName: string;
 }
 
 export default function Dashboard({
@@ -18,7 +19,8 @@ export default function Dashboard({
   uploadedFiles,
   onNavigateToGenerate,
   onNavigateToIntegrations,
-  onOpenBRD
+  onOpenBRD,
+  userName
 }: DashboardProps) {
   const totalBRDs = brds.length;
   const sourcesCount = Object.values(integrations).filter(Boolean).length;
@@ -30,7 +32,7 @@ export default function Dashboard({
       <div className="dash-wrap">
         <div className="dash-hero-row">
           <div className="page-h">
-            <div className="page-title">Good morning, <em>User</em></div>
+            <div className="page-title">Welcome, <em>{userName}</em></div>
             <div className="page-sub">{totalBRDs} documents generated · {sourcesCount} sources connected</div>
           </div>
           <button className="new-btn" onClick={onNavigateToGenerate}>

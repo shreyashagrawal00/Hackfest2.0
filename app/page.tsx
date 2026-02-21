@@ -196,6 +196,7 @@ export default function Home() {
           onNavigateToGenerate={() => setActiveTab('generate')}
           onNavigateToIntegrations={() => setActiveTab('integrations')}
           onOpenBRD={(index) => { setCurrentBRDIndex(index); setActiveTab('editor'); }}
+          userName={user.name}
         />
       )}
       {activeTab === 'integrations' && (
