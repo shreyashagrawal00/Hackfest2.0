@@ -61,7 +61,7 @@ export default function Editor({ brd, onAIMessage, aiMessages, aiProcessing }: E
           <button className="export-btn">Export PDF</button>
         </div>
 
-        <div contentEditable className="doc-h1">{brd.projectName}</div>
+        <div contentEditable suppressContentEditableWarning={true} className="doc-h1">{brd.projectName}</div>
 
         <div className="doc-meta-row">
           <div className="doc-meta-item">Status <strong style={{ color: 'var(--gold)' }}>Draft</strong></div>
@@ -79,6 +79,7 @@ export default function Editor({ brd, onAIMessage, aiMessages, aiProcessing }: E
             <div
               className="doc-content"
               contentEditable
+              suppressContentEditableWarning={true}
               dangerouslySetInnerHTML={{ __html: sec.content }}
             />
             {sec.requirements && (

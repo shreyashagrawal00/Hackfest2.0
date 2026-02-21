@@ -1,85 +1,36 @@
-# 📄 Business Requirements Document (BRD) Generation Agent
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-> **Transforming scattered communication into structured business knowledge.**
+## Getting Started
 
-An AI-powered software solution that automatically generates comprehensive Business Requirements Documents (BRDs) by extracting and analyzing data from multiple communication channels such as emails, meeting transcripts, chat platforms, and uploaded documents.
+First, run the development server:
 
----
-
-## 🚀 Problem Statement
-
-Business requirements are often scattered across emails, meetings, chat messages, and informal documents. Manually consolidating this information into a structured BRD is:
-- **Time-consuming** and inefficient.
-- **Prone to errors** and omissions.
-- **Difficult to trace** back to original sources.
-
-This project builds an intelligent platform that collects, filters, and transforms unstructured communication into clear, actionable business documentation.
-
----
-
-## ✨ Key Features
-
-- **🔗 Multi-Source Integration**: Connects with Gmail, Slack, meeting transcripts, and local documents.
-- **🧠 AI extraction**: Intelligent information extraction and summarization using LLMs.
-- **📑 Automated BRD Generation**: Generates structured sections including:
-  - Executive Summary & Business Objectives.
-  - Stakeholder Analysis & Timeline.
-  - Functional & Non-Functional Requirements.
-  - Success Metrics & Assumptions.
-- **✏️ Natural Language Editing**: Refine requirements using simple text commands.
-- **📌 Source Citation**: Full explainability with traceable data sources.
-- **📊 Insights**: Dashboards for requirement traceability and conflict detection.
-
----
-
-## 🏗️ System Architecture
-
-The system follows a modular, layered pipeline designed for scalability:
-
-```mermaid
-graph TD
-    A[Data Sources: Gmail, Slack, Docs] --> B[Data Ingestion Layer]
-    B --> C[Preprocessing & Noise Filtering]
-    C --> D[AI/NLP Engine: LLM & LangChain]
-    D --> E[Backend API: FastAPI / Node.js]
-    E --> F[Database: MongoDB / PostgreSQL]
-    F --> G[Frontend Dashboard: React / Next.js]
-    G --> H[Output Module: PDF / DOC Export]
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
----
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## 🛠️ Tech Stack
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-| Layer | Technology |
-| :--- | :--- |
-| **Frontend** | React / Next.js |
-| **Backend** | Node.js / FastAPI |
-| **AI/NLP** | Python, LangChain, OpenAI/Claude APIs |
-| **Database** | MongoDB / PostgreSQL |
-| **Integrations** | Gmail API, Slack API |
-| **Deployment** | AWS / Azure / GCP |
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
----
+## Learn More
 
-## 📅 Roadmap & Future Enhancements
+To learn more about Next.js, take a look at the following resources:
 
-- [ ] **Advanced Conflict Resolution**: Real-time recommendations for requirement clashes.
-- [ ] **Real-time Collaboration**: Multi-user editing and review cycles.
-- [ ] **Multilingual Support**: Generate documentation in multiple languages.
-- [ ] **Project Management Sync**: Direct integration with Jira, Trello, and Azure DevOps.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
----
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## 👥 Team
-- **Ayushi Srivastava**
+## Deploy on Vercel
 
----
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-## 📜 License
-This project is developed for hackathon and educational purposes.
-
----
-
-## 🔮 Vision
-To create an intelligent documentation assistant that transforms scattered communication into structured business knowledge, improving productivity, accuracy, and decision-making across organizations.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
