@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BRDagent ✦
 
-## Getting Started
+**Automated Requirements Intelligence**
 
-First, run the development server:
+BRDagent is a premium, AI-driven platform designed to transform fragmented business communications into structured, professional Business Requirement Documents (BRDs).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ❖ Problem Statement
+Project managers and business analysts spend countess hours manually extracting requirement signals from high-noise data sources like email threads, meeting transcripts, and chat archives. This process is:
+1. **Time-Consuming**: Searching through hundreds of messages is inefficient.
+2. **Error-Prone**: Critical requirement signals are easily missed in fragmented conversations.
+3. **Inconsistent**: Formatting and structuring documents manually leads to variability in quality.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**BRDagent** solves this by acting as a specialized intelligence layer that ingests multi-source data and generates high-fidelity documentation instantly.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏗 Architecture
+The application is built with a focus on high-performance signal extraction and premium user experience.
 
-## Learn More
+- **Frontend Core**: [Next.js 16 (App Router)](https://nextjs.org/) + [React 19](https://react.dev/).
+- **Aesthetic Layer**: Custom Vanilla CSS with a **tactile paper-tier** design system, featuring fractal noise overlays and radial gradients for a premium feel.
+- **Identity & Security**: [Google Identity Services (GIS)](https://developers.google.com/identity/gsi/web) for secure OAuth 2.0 flow.
+- **Intelligence Ingestion**: [Gmail API](https://developers.google.com/gmail/api) integration to fetch project-relevant email feeds.
+- **Document Engine**: Client-side document assembly with [html2pdf.js](https://github.com/eKoopmans/html2pdf.js) for high-quality A4 PDF exports.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠 Tech Stack
+- **Languages**: [TypeScript](https://www.typescriptlang.org/), JavaScript.
+- **Framework**: Next.js 16 (Turbopack).
+- **Styling**: Vanilla CSS (Global Variables + Modular Components).
+- **Integration**: Google Cloud Platform (OAuth 2.0, Gmail GSuite).
+- **Export**: PDF.js / html2canvas / jspdf (via html2pdf).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🚀 Deployment & Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Environment Variables
+To run this project, you will need to add the following variables to your `.env.local` file:
+`NEXT_PUBLIC_GOOGLE_CLIENT_ID` (Obtained from Google Cloud Console)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Local Development
+1. Clone the repository.
+2. Run `npm install`.
+3. Start the dev server: `npm run dev`.
+
+### Deployment
+This project is optimized for deployment on [Vercel](https://vercel.com/):
+1. Connect your repository to Vercel.
+2. Configure the `NEXT_PUBLIC_GOOGLE_CLIENT_ID` in the environment settings.
+3. Deploy.
+
+---
+
+## ✦ Key Features
+- **Live Intelligence Feed**: Connect Gmail to see real-time signal extraction.
+- **Interactive Editor**: AI-assisted editing and requirement validation.
+- **Paper-Tier Aesthetics**: A workspace designed for focus and professional pride.
+- **One-Click Export**: Professional PDF generation with proper page breaks and styling.

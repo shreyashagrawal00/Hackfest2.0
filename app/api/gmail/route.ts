@@ -8,7 +8,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing access token' }, { status: 400 });
   }
 
-  // Debug: Forced re-compile at 2026-02-21T21:40:00Z
   try {
     // 1. Fetch the list of latest messages
     const listRes = await fetch(
