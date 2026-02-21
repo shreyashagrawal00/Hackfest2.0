@@ -35,12 +35,29 @@ export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiPr
     }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     setExporting(true);
-    setTimeout(() => {
+    try {
+      // @ts-ignore
+      const html2pdf = (await import('html2pdf.js')).default;
+      const element = document.getElementById('brd-content');
+      if (!element) throw new Error('Document content not found');
+      const opt = {
+        margin: [15, 15] as [number, number],
+        filename: `${brd.projectName.replace(/\s+/g, '_')}_BRD.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('PDF Export Error:', error);
+      alert('Failed to export PDF. Please try again.');
+    } finally {
       setExporting(false);
-      alert('PDF Exported successfully! (Simulated)');
-    }, 2500);
+    }
   };
 
   const handleContentBlur = (sectionId: string, e: any) => {
@@ -91,55 +108,59 @@ export default function Editor({ brd, onAIMessage, onUpdateBRD, aiMessages, aiPr
           </button>
         </div>
 
-        <div
-          contentEditable={editMode}
-          suppressContentEditableWarning={true}
-          className="doc-h1"
-          onBlur={(e) => onUpdateBRD({ projectName: e.target.innerText })}
-        >
-          {brd.projectName}
-        </div>
-
-        <div className="doc-meta-row">
-          <div className="doc-meta-item">Status <strong style={{ color: 'var(--gold)' }}>Draft</strong></div>
-          <div className="doc-meta-item">Created <strong>{new Date(brd.createdAt).toLocaleDateString()}</strong></div>
-          <div className="doc-meta-item">Sections <strong>{brd.sections.length}</strong></div>
-          {brd.conflicts > 0 && <div className="doc-meta-item" style={{ color: 'var(--rust)' }}>⚠ <strong>{brd.conflicts} Conflicts</strong></div>}
-        </div>
-
-        {brd.sections.map((sec: any, i: number) => (
-          <div key={sec.id} className="doc-section" id={`sec-${sec.id}`}>
-            <div className="doc-section-title">
-              <span className="sec-num">§{i + 1}</span>
-              {sec.title}
-            </div>
-            <div
-              className={`doc-content ${!editMode ? 'readonly' : ''}`}
-              contentEditable={editMode}
-              suppressContentEditableWarning={true}
-              dangerouslySetInnerHTML={{ __html: sec.content }}
-              onBlur={(e) => handleContentBlur(sec.id, e)}
-            />
-            {sec.requirements && (
-              <table className="req-table">
-                <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
-                <tbody>
-                  {sec.requirements.map((r: any) => (
-                    <tr key={r.id}>
-                      <td className="req-id">{r.id}</td>
-                      <td>{r.description || r.text}</td>
-                      <td>
-                        <span className={`pbadge ${r.priority === 'High' ? 'p-high' : r.priority === 'Medium' ? 'p-med' : 'p-low'}`}>
-                          {r.priority}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+        <div id="brd-content">
+          <div
+            contentEditable={editMode}
+            suppressContentEditableWarning={true}
+            className="doc-h1"
+            onBlur={(e) => onUpdateBRD({ projectName: e.target.innerText })}
+            style={{ outline: 'none' }}
+          >
+            {brd.projectName}
           </div>
-        ))}
+
+          <div className="doc-meta-row">
+            <div className="doc-meta-item">Status <strong style={{ color: 'var(--gold)' }}>Draft</strong></div>
+            <div className="doc-meta-item">Created <strong>{new Date(brd.createdAt).toLocaleDateString()}</strong></div>
+            <div className="doc-meta-item">Sections <strong>{brd.sections.length}</strong></div>
+            {brd.conflicts > 0 && <div className="doc-meta-item" style={{ color: 'var(--rust)' }}>⚠ <strong>{brd.conflicts} Conflicts</strong></div>}
+          </div>
+
+          {brd.sections.map((sec: any, i: number) => (
+            <div key={sec.id} className="doc-section" id={`sec-${sec.id}`}>
+              <div className="doc-section-title">
+                <span className="sec-num">§{i + 1}</span>
+                {sec.title}
+              </div>
+              <div
+                className={`doc-content ${!editMode ? 'readonly' : ''}`}
+                contentEditable={editMode}
+                suppressContentEditableWarning={true}
+                dangerouslySetInnerHTML={{ __html: sec.content }}
+                onBlur={(e) => handleContentBlur(sec.id, e)}
+                style={{ outline: 'none' }}
+              />
+              {sec.requirements && (
+                <table className="req-table">
+                  <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+                  <tbody>
+                    {sec.requirements.map((r: any) => (
+                      <tr key={r.id}>
+                        <td className="req-id">{r.id}</td>
+                        <td>{r.description || r.text}</td>
+                        <td>
+                          <span className={`pbadge ${r.priority === 'High' ? 'p-high' : r.priority === 'Medium' ? 'p-med' : 'p-low'}`}>
+                            {r.priority}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* AI Panel */}
