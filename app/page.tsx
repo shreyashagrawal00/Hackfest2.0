@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { auth } from './utils/auth';
 import AppLayout from './components/Layout/AppLayout';
 import Login from './components/Login/Login';
 import Dashboard from './components/Dashboard/Dashboard';
@@ -10,6 +11,15 @@ import Editor from './components/Editor/Editor';
 
 export default function Home() {
   const [user, setUser] = useState<{ name: string; avatar: string } | null>(null);
+
+  // Persistence: Check session on mount
+  React.useEffect(() => {
+    const session = auth.getSession();
+    if (session) {
+      setUser({ name: session.name, avatar: session.name.slice(0, 2).toUpperCase() });
+    }
+  }, []);
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [integrations, setIntegrations] = useState({ gmail: false, slack: false, fireflies: false });
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
@@ -27,6 +37,7 @@ export default function Home() {
   };
 
   const handleLogout = () => {
+    auth.setSession(null);
     setUser(null);
   };
 
