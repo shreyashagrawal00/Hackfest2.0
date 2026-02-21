@@ -1,0 +1,263 @@
+.main {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--paper);
+}
+
+.dash-wrap {
+  padding: 36px 40px 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.dash-hero-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.page-title {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+}
+
+.page-title em {
+  color: var(--sage);
+  font-style: italic;
+}
+
+.page-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--mist);
+  margin-top: 6px;
+}
+
+.new-btn {
+  background: var(--sage);
+  border: none;
+  border-radius: 11px;
+  padding: 12px 22px;
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.new-btn:hover {
+  background: var(--sage-light);
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.stat-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--mist);
+  margin-bottom: 8px;
+}
+
+.stat-val {
+  font-family: 'Fraunces', serif;
+  font-size: 38px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.stat-note {
+  font-size: 12px;
+  color: var(--sage);
+  margin-top: 4px;
+  font-family: 'DM Mono', monospace;
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+}
+
+.section-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--mist);
+  margin-bottom: 14px;
+}
+
+.brd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.empty-list-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 32px;
+  text-align: center;
+  color: var(--mist);
+}
+
+.empty-icon {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 300;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+.empty-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+}
+
+.action-link {
+  color: var(--sage);
+  cursor: pointer;
+}
+
+.brd-row {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.brd-row:hover {
+  border-color: var(--sage);
+  transform: translateX(3px);
+}
+
+.brd-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--sage);
+  flex-shrink: 0;
+}
+
+.brd-info {
+  flex: 1;
+}
+
+.brd-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.brd-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--mist);
+}
+
+.badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.badge-done {
+  background: rgba(61, 90, 71, 0.1);
+  color: var(--sage);
+}
+
+.sources-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.src-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.src-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.src-info {
+  flex: 1;
+}
+
+.src-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.src-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--mist);
+}
+
+.src-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.manage-btn {
+  width: 100%;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--mist);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.manage-btn:hover {
+  border-color: var(--sage);
+}

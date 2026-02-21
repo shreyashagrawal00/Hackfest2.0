@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&display=swap');
+
+:root {
+  --ink: #0C0C0E;
+  --paper: #F4F1EB;
+  --cream: #EDE9DF;
+  --sage: #3D5A47;
+  --sage-light: #547A62;
+  --sage-dim: rgba(61,90,71,0.12);
+  --gold: #C4973E;
+  --gold-light: #E2B55A;
+  --rust: #A8492A;
+  --mist: #7A8C96;
+  --border: rgba(12,12,14,0.1);
+  --card: #FAFAF6;
+  --shadow: 0 2px 20px rgba(12,12,14,0.08);
+  
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--ink);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+  border-radius: 3px;
+}
+
+/* Utility */
+.hidden {
+  display: none !important;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

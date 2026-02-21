@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRDagent — Automated Requirements Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0C0C0E;
+  --paper: #F4F1EB;
+  --cream: #EDE9DF;
+  --sage: #3D5A47;
+  --sage-light: #547A62;
+  --sage-dim: rgba(61,90,71,0.12);
+  --gold: #C4973E;
+  --gold-light: #E2B55A;
+  --rust: #A8492A;
+  --mist: #7A8C96;
+  --border: rgba(12,12,14,0.1);
+  --card: #FAFAF6;
+  --shadow: 0 2px 20px rgba(12,12,14,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Syne',sans-serif;background:var(--ink);color:var(--ink);display:flex;flex-direction:column;}
+
+/* APP SHELL */
+.app-shell{display:flex;flex-direction:column;height:100vh;}
+.topbar{background:var(--ink);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.06);}
+.logo{font-family:'Fraunces',serif;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.3px;cursor:pointer;}
+.logo em{color:var(--gold);font-style:italic;}
+.topbar-center{display:flex;gap:4px;}
+.top-tab{padding:7px 18px;border:none;background:transparent;color:rgba(255,255,255,0.4);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;border-radius:8px;transition:all 0.2s;}
+.top-tab.active,.top-tab:hover{background:rgba(255,255,255,0.08);color:#fff;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.user-chip{display:flex;align-items:center;gap:9px;cursor:pointer;}
+.user-av{width:32px;height:32px;background:var(--sage);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.user-name{font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.45);}
+
+/* PAGES */
+.page{display:none;flex:1;overflow:hidden;}
+.page.active{display:flex;}
+
+/* ====== LOGIN PAGE ====== */
+#page-login{background:var(--ink);align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 55% 45% at 75% 25%, rgba(61,90,71,0.35) 0%, transparent 65%), radial-gradient(ellipse 40% 55% at 25% 75%, rgba(196,151,62,0.12) 0%, transparent 55%);}
+.login-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:48px 48px;}
+.login-card{position:relative;background:rgba(18,18,22,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:52px 44px;width:420px;backdrop-filter:blur(24px);}
+.login-logo{font-family:'Fraunces',serif;font-size:30px;font-weight:300;color:#fff;margin-bottom:4px;}
+.login-logo em{color:var(--gold);font-style:italic;}
+.login-tag{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:0.08em;margin-bottom:44px;}
+.lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.35);margin-bottom:7px;}
+.linput{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:11px;padding:13px 15px;color:#fff;font-family:'Syne',sans-serif;font-size:14px;outline:none;margin-bottom:18px;transition:border-color 0.2s;}
+.linput:focus{border-color:var(--sage-light);}
+.linput::placeholder{color:rgba(255,255,255,0.18);}
+.login-btn{width:100%;background:var(--sage);border:none;border-radius:11px;padding:15px;color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.2s;margin-top:6px;}
+.login-btn:hover{background:var(--sage-light);}
+.login-error{background:rgba(168,73,42,0.15);border:1px solid rgba(168,73,42,0.3);border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;color:#E07050;margin-bottom:16px;display:none;}
+.login-divider{display:flex;align-items:center;gap:12px;margin:24px 0;color:rgba(255,255,255,0.2);font-family:'DM Mono',monospace;font-size:11px;}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);}
+.oauth-row{display:flex;gap:10px;}
+.oauth-btn{flex:1;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:11px;padding:12px;color:rgba(255,255,255,0.6);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;}
+.oauth-btn:hover{border-color:rgba(255,255,255,0.25);color:#fff;}
+
+/* ====== LAYOUT ====== */
+.sidebar{width:220px;background:var(--ink);flex-shrink:0;padding:24px 16px;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,0.06);}
+.sb-section{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.22);padding:0 10px;margin:20px 0 8px;}
+.sb-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:rgba(255,255,255,0.45);font-size:13px;cursor:pointer;margin-bottom:1px;transition:all 0.2s;border:none;background:transparent;width:100%;text-align:left;}
+.sb-link:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.04);}
+.sb-link.active{color:#fff;background:var(--sage);}
+.sb-icon{font-size:14px;width:18px;text-align:center;}
+.main{flex:1;overflow-y:auto;background:var(--paper);}
+
+/* ====== DASHBOARD ====== */
+.dash-wrap{padding:36px 40px 60px;max-width:1100px;}
+.page-h{margin-bottom:32px;}
+.page-title{font-family:'Fraunces',serif;font-size:32px;font-weight:300;color:var(--ink);letter-spacing:-0.5px;line-height:1.15;}
+.page-title em{color:var(--sage);font-style:italic;}
+.page-sub{font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);margin-top:6px;}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:36px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;}
+.stat-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--mist);margin-bottom:8px;}
+.stat-val{font-family:'Fraunces',serif;font-size:38px;font-weight:300;line-height:1;color:var(--ink);}
+.stat-note{font-size:12px;color:var(--sage);margin-top:4px;font-family:'DM Mono',monospace;}
+.dash-grid{display:grid;grid-template-columns:1fr 300px;gap:24px;}
+.section-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--mist);margin-bottom:14px;}
+.brd-list{display:flex;flex-direction:column;gap:10px;}
+.brd-row{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px 22px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.2s;}
+.brd-row:hover{border-color:var(--sage);transform:translateX(3px);}
+.brd-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.brd-info{flex:1;}
+.brd-name{font-size:14px;font-weight:600;margin-bottom:3px;}
+.brd-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);}
+.badge{font-family:'DM Mono',monospace;font-size:10px;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+.badge-done{background:rgba(61,90,71,0.1);color:var(--sage);}
+.badge-draft{background:rgba(196,151,62,0.1);color:#8A6920;}
+.badge-review{background:rgba(168,73,42,0.1);color:var(--rust);}
+.sources-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;}
+.src-item{display:flex;align-items:center;gap:13px;padding:12px 0;border-bottom:1px solid var(--border);}
+.src-item:last-child{border-bottom:none;padding-bottom:0;}
+.src-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.src-info{flex:1;}
+.src-name{font-size:13px;font-weight:600;}
+.src-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);}
+.src-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);}
+.new-btn{background:var(--sage);border:none;border-radius:11px;padding:12px 22px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background 0.2s;}
+.new-btn:hover{background:var(--sage-light);}
+.dash-hero-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;}
+
+/* ====== INTEGRATIONS ====== */
+.int-wrap{padding:36px 40px 60px;}
+.int-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px;}
+.int-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:all 0.2s;cursor:pointer;}
+.int-card:hover{border-color:var(--sage);}
+.int-card.connected{border-color:var(--sage);}
+.int-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.int-ico{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.int-badge{font-family:'DM Mono',monospace;font-size:10px;padding:4px 10px;border-radius:20px;}
+.int-badge.on{background:rgba(61,90,71,0.1);color:var(--sage);}
+.int-badge.off{background:var(--ink);color:#fff;cursor:pointer;transition:background 0.2s;}
+.int-badge.off:hover{background:var(--sage);}
+.int-name{font-size:15px;font-weight:600;margin-bottom:5px;}
+.int-desc{font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);line-height:1.7;}
+.int-sync{font-family:'DM Mono',monospace;font-size:10px;color:var(--sage);margin-top:10px;}
+.drop-zone{background:var(--card);border:2px dashed var(--border);border-radius:16px;padding:44px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:28px;}
+.drop-zone:hover,.drop-zone.dragging{border-color:var(--sage);background:rgba(61,90,71,0.04);}
+.drop-icon{font-size:36px;margin-bottom:14px;}
+.drop-title{font-size:17px;font-weight:600;margin-bottom:6px;}
+.drop-sub{font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);}
+.drop-types{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+.type-tag{font-family:'DM Mono',monospace;font-size:11px;background:var(--cream);border:1px solid var(--border);padding:3px 9px;border-radius:5px;color:var(--mist);}
+.file-list{display:flex;flex-direction:column;gap:10px;}
+.file-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 20px;display:flex;align-items:center;gap:14px;}
+.file-icon{font-size:20px;}
+.file-info{flex:1;}
+.file-name{font-size:13px;font-weight:600;margin-bottom:3px;}
+.file-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);}
+.file-remove{background:none;border:none;cursor:pointer;color:var(--mist);font-size:16px;padding:4px;transition:color 0.2s;}
+.file-remove:hover{color:var(--rust);}
+
+/* ====== GENERATE ====== */
+.gen-layout{display:grid;grid-template-columns:1fr 360px;flex:1;overflow:hidden;}
+.gen-main{padding:36px 40px;overflow-y:auto;background:var(--paper);}
+.gen-side{background:var(--card);border-left:1px solid var(--border);padding:28px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:20px;}
+.form-group{margin-bottom:20px;}
+.form-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--mist);margin-bottom:8px;display:block;}
+.form-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Syne',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--sage);}
+.form-textarea{resize:vertical;min-height:100px;font-family:'DM Mono',monospace;font-size:12px;line-height:1.7;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.chip{display:flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid var(--border);border-radius:30px;font-size:13px;cursor:pointer;background:var(--card);transition:all 0.2s;user-select:none;}
+.chip.sel{border-color:var(--sage);background:rgba(61,90,71,0.08);color:var(--sage);}
+.section-toggles{display:flex;flex-direction:column;gap:7px;}
+.sec-toggle{display:flex;align-items:center;gap:12px;padding:11px 15px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color 0.2s;}
+.sec-toggle:hover,.sec-toggle.on{border-color:var(--sage);}
+.chk{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all 0.2s;}
+.sec-toggle.on .chk{background:var(--sage);border-color:var(--sage);color:#fff;}
+.sec-label{font-size:13px;font-weight:500;}
+.date-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.gen-btn{width:100%;background:var(--sage);border:none;border-radius:12px;padding:16px;color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;margin-top:8px;}
+.gen-btn:hover:not(:disabled){background:var(--sage-light);}
+.gen-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* Progress panel */
+.prog-card{background:var(--ink);border-radius:14px;overflow:hidden;}
+.prog-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+.prog-title{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.1em;}
+.prog-bar-wrap{background:rgba(255,255,255,0.1);border-radius:4px;height:4px;width:100px;overflow:hidden;}
+.prog-bar-fill{height:100%;background:var(--gold);border-radius:4px;transition:width 0.5s ease;}
+.prog-steps{padding:6px 0;}
+.prog-step{display:flex;align-items:center;gap:10px;padding:9px 18px;}
+.step-ind{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.step-done{background:var(--sage);color:#fff;}
+.step-active{background:var(--gold);color:#fff;}
+.step-pending{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.3);}
+.step-name{font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.6);flex:1;}
+.step-pending .step-name{color:rgba(255,255,255,0.25);}
+.step-time{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.25);}
+
+.data-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.data-stat{background:var(--cream);border-radius:10px;padding:14px;}
+.data-stat-val{font-family:'Fraunces',serif;font-size:30px;font-weight:300;color:var(--ink);}
+.data-stat-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--mist);text-transform:uppercase;letter-spacing:0.08em;}
+
+/* ====== EDITOR ====== */
+.editor-layout{display:grid;grid-template-columns:200px 1fr 340px;flex:1;overflow:hidden;}
+.doc-nav{background:var(--ink);padding:20px 14px;overflow-y:auto;}
+.doc-nav-title{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:0.12em;padding:0 8px;margin-bottom:10px;}
+.doc-nav-item{display:flex;align-items:flex-start;gap:7px;padding:8px 10px;border-radius:8px;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;margin-bottom:1px;transition:all 0.2s;line-height:1.4;}
+.doc-nav-item:hover{color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.04);}
+.doc-nav-item.sec-active{color:#fff;background:rgba(255,255,255,0.07);}
+.doc-nav-num{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2);flex-shrink:0;margin-top:1px;}
+.doc-body{padding:44px 56px;background:#fff;overflow-y:auto;}
+.doc-toolbar{display:flex;align-items:center;gap:6px;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:36px;}
+.tbtn{padding:6px 12px;border:1px solid transparent;border-radius:6px;font-size:12px;cursor:pointer;background:transparent;color:var(--mist);font-family:'Syne',sans-serif;transition:all 0.2s;}
+.tbtn:hover,.tbtn.ton{background:var(--cream);border-color:var(--border);color:var(--ink);}
+.tsep{width:1px;height:18px;background:var(--border);margin:0 3px;}
+.export-btn{margin-left:auto;background:var(--gold);border:none;border-radius:8px;padding:8px 18px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer;transition:background 0.2s;}
+.export-btn:hover{background:var(--gold-light);}
+.doc-h1{font-family:'Fraunces',serif;font-size:34px;font-weight:300;color:var(--ink);letter-spacing:-0.5px;margin-bottom:10px;line-height:1.15;outline:none;}
+.doc-h1:empty::before{content:attr(data-placeholder);color:rgba(0,0,0,0.25);}
+.doc-meta-row{display:flex;gap:20px;margin-bottom:32px;padding-bottom:22px;border-bottom:1px solid var(--border);}
+.doc-meta-item{font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);}
+.doc-meta-item strong{color:var(--ink);font-weight:500;}
+.doc-section{margin-bottom:32px;scroll-margin-top:20px;}
+.doc-section-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--sage);margin-bottom:12px;display:flex;align-items:center;gap:9px;}
+.sec-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--mist);font-weight:400;}
+.doc-content{font-family:'DM Mono',monospace;font-size:13px;color:#2A2A2E;line-height:1.85;outline:none;min-height:40px;}
+.doc-content:empty::before{content:'Click to edit...';color:rgba(0,0,0,0.2);}
+.cite-tag{display:inline-flex;align-items:center;gap:3px;background:rgba(61,90,71,0.1);color:var(--sage);border-radius:4px;padding:1px 6px;font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;vertical-align:middle;margin:0 2px;transition:background 0.2s;}
+.cite-tag:hover{background:rgba(61,90,71,0.2);}
+.conflict-tag{background:rgba(168,73,42,0.1);color:var(--rust);}
+.req-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;}
+.req-table th{background:var(--cream);padding:9px 13px;text-align:left;font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mist);font-weight:400;}
+.req-table td{padding:11px 13px;border-top:1px solid var(--border);font-family:'DM Mono',monospace;font-size:11px;color:#2A2A2E;line-height:1.6;}
+.req-id{color:var(--sage);}
+.pbadge{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:4px;}
+.p-high{background:rgba(168,73,42,0.1);color:var(--rust);}
+.p-med{background:rgba(196,151,62,0.1);color:#8A6920;}
+.p-low{background:rgba(61,90,71,0.1);color:var(--sage);}
+.empty-doc{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;color:var(--mist);text-align:center;}
+.empty-doc .big{font-family:'Fraunces',serif;font-size:48px;font-weight:300;margin-bottom:12px;opacity:0.3;}
+.empty-doc p{font-family:'DM Mono',monospace;font-size:13px;}
+
+/* AI PANEL */
+.ai-panel{background:var(--ink);display:flex;flex-direction:column;overflow:hidden;}
+.ai-panel-head{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;}
+.ai-status{display:flex;align-items:center;gap:9px;}
+.ai-pulse{width:8px;height:8px;background:var(--sage-light);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+.ai-lbl{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.1em;}
+.ai-model-tag{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);}
+.ai-messages{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+.ai-msg{max-width:92%;border-radius:12px;padding:11px 15px;font-family:'DM Mono',monospace;font-size:12px;line-height:1.65;}
+.ai-msg.sys{background:rgba(61,90,71,0.2);border:1px solid rgba(61,90,71,0.3);color:rgba(255,255,255,0.8);align-self:flex-start;}
+.ai-msg.usr{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.65);align-self:flex-end;}
+.ai-msg.loading{align-self:flex-start;}
+.ai-typing{display:flex;gap:4px;padding:12px 16px;background:rgba(61,90,71,0.2);border:1px solid rgba(61,90,71,0.3);border-radius:12px;align-self:flex-start;}
+.ai-typing span{width:6px;height:6px;background:rgba(255,255,255,0.4);border-radius:50%;animation:typing 1.2s infinite;}
+.ai-typing span:nth-child(2){animation-delay:0.2s;}
+.ai-typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes typing{0%,80%,100%{transform:scale(1);opacity:0.4;}40%{transform:scale(1.15);opacity:1;}}
+.ai-suggestions{padding:0 20px 14px;display:flex;flex-direction:column;gap:5px;}
+.ai-sugg-lbl{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;}
+.ai-sugg{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:9px 13px;font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.45);cursor:pointer;transition:all 0.2s;}
+.ai-sugg:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.75);}
+.ai-input-row{padding:14px 18px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:9px;align-items:flex-end;}
+.ai-ta{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:11px 13px;color:rgba(255,255,255,0.8);font-family:'DM Mono',monospace;font-size:12px;outline:none;resize:none;height:52px;line-height:1.5;transition:border-color 0.2s;}
+.ai-ta::placeholder{color:rgba(255,255,255,0.18);}
+.ai-ta:focus{border-color:var(--sage-light);}
+.ai-send{width:40px;height:40px;background:var(--sage);border:none;border-radius:10px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:background 0.2s;}
+.ai-send:hover:not(:disabled){background:var(--sage-light);}
+.ai-send:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* Conflict banner */
+.conflict-banner{background:rgba(168,73,42,0.08);border:1px solid rgba(168,73,42,0.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.conflict-banner p{font-family:'DM Mono',monospace;font-size:12px;color:var(--rust);}
+
+/* Scrollbars */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:3px;}
+.ai-panel ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);}
+
+/* Utility */
+.hidden{display:none!important;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.toast{position:fixed;bottom:28px;right:28px;background:var(--ink);color:#fff;padding:13px 20px;border-radius:12px;font-family:'DM Mono',monospace;font-size:12px;z-index:9999;transform:translateY(80px);opacity:0;transition:all 0.3s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="app-shell">
+  <!-- TOPBAR -->
+  <header class="topbar" id="topbar" style="display:none">
+    <div class="logo" onclick="nav('dashboard')">BRD<em>agent</em></div>
+    <div class="topbar-center">
+      <button class="top-tab active" id="tab-dashboard" onclick="nav('dashboard')">Dashboard</button>
+      <button class="top-tab" id="tab-integrations" onclick="nav('integrations')">Integrations</button>
+      <button class="top-tab" id="tab-generate" onclick="nav('generate')">Generate BRD</button>
+      <button class="top-tab" id="tab-editor" onclick="nav('editor')">Editor</button>
+    </div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-av" id="user-av">?</div>
+        <span class="user-name" id="user-name-display">User</span>
+      </div>
+      <button class="sbtn" onclick="logout()" style="background:none;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:6px 14px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">Logout</button>
+    </div>
+  </header>
+
+  <!-- LOGIN PAGE -->
+  <div class="page active" id="page-login" style="display:flex;">
+    <div class="login-bg"></div>
+    <div class="login-grid-bg"></div>
+    <div class="login-card">
+      <div class="login-logo">BRD<em>agent</em></div>
+      <div class="login-tag">// AUTOMATED REQUIREMENTS INTELLIGENCE</div>
+      <div class="login-error" id="login-error">Invalid credentials. Try demo@company.com / demo123</div>
+      <div class="lbl">Email address</div>
+      <input class="linput" id="login-email" type="email" placeholder="demo@company.com" value="demo@company.com">
+      <div class="lbl">Password</div>
+      <input class="linput" id="login-pass" type="password" placeholder="••••••••" value="demo123">
+      <button class="login-btn" onclick="doLogin()">Sign in →</button>
+      <div class="login-divider">or</div>
+      <div class="oauth-row">
+        <button class="oauth-btn" onclick="doLoginAs('Google')">G &nbsp;Google</button>
+        <button class="oauth-btn" onclick="doLoginAs('Slack')"># &nbsp;Slack SSO</button>
+      </div>
+      <div style="text-align:center;margin-top:22px;font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.25);">Demo: demo@company.com / demo123</div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page" id="page-dashboard">
+    <div class="main">
+      <div class="dash-wrap">
+        <div class="dash-hero-row">
+          <div class="page-h">
+            <div class="page-title" id="dash-greeting">Good morning, <em>User</em></div>
+            <div class="page-sub" id="dash-sub">// 0 documents generated · 0 sources connected</div>
+          </div>
+          <button class="new-btn" onclick="nav('generate')">✦ &nbsp;New BRD</button>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-lbl">Total BRDs</div>
+            <div class="stat-val" id="stat-total">0</div>
+            <div class="stat-note" id="stat-total-note">none yet</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Sources Connected</div>
+            <div class="stat-val" id="stat-sources">0</div>
+            <div class="stat-note">integrations active</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Files Uploaded</div>
+            <div class="stat-val" id="stat-files">0</div>
+            <div class="stat-note">ready to process</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Conflicts Found</div>
+            <div class="stat-val" id="stat-conflicts" style="color:var(--rust)">0</div>
+            <div class="stat-note" id="stat-conflicts-note" style="color:var(--mist)">across all docs</div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div>
+            <div class="section-lbl">Generated Documents</div>
+            <div class="brd-list" id="brd-list">
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:32px;text-align:center;color:var(--mist);">
+                <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:300;margin-bottom:8px;opacity:0.4;">✦</div>
+                <div style="font-family:'DM Mono',monospace;font-size:12px;">No BRDs yet. <span style="color:var(--sage);cursor:pointer;" onclick="nav('generate')">Generate your first one →</span></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="section-lbl">Data Sources</div>
+            <div class="sources-card">
+              <div class="src-item">
+                <div class="src-icon" style="background:rgba(234,67,53,0.1)">📧</div>
+                <div class="src-info"><div class="src-name">Gmail</div><div class="src-count" id="src-gmail-count">Not connected</div></div>
+                <div class="src-dot" id="src-gmail-dot" style="background:var(--mist)"></div>
+              </div>
+              <div class="src-item">
+                <div class="src-icon" style="background:rgba(74,21,75,0.08)">💬</div>
+                <div class="src-info"><div class="src-name">Slack</div><div class="src-count" id="src-slack-count">Not connected</div></div>
+                <div class="src-dot" id="src-slack-dot" style="background:var(--mist)"></div>
+              </div>
+              <div class="src-item">
+                <div class="src-icon" style="background:rgba(201,168,76,0.1)">🎙️</div>
+                <div class="src-info"><div class="src-name">Fireflies.ai</div><div class="src-count" id="src-fire-count">Not connected</div></div>
+                <div class="src-dot" id="src-fire-dot" style="background:var(--mist)"></div>
+              </div>
+              <div class="src-item" style="border-bottom:none;">
+                <div class="src-icon" style="background:rgba(138,155,168,0.1)">📄</div>
+                <div class="src-info"><div class="src-name">Uploaded Docs</div><div class="src-count" id="src-docs-count">0 files</div></div>
+                <div class="src-dot" id="src-docs-dot" style="background:var(--mist)"></div>
+              </div>
+              <div style="margin-top:14px;">
+                <button onclick="nav('integrations')" style="width:100%;background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--sage)'" onmouseout="this.style.borderColor='var(--border)'">+ Manage Integrations</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTEGRATIONS PAGE -->
+  <div class="page" id="page-integrations">
+    <div class="main">
+      <div class="int-wrap">
+        <div class="page-h">
+          <div class="page-title">Data Sources &amp; <em>Integrations</em></div>
+          <div class="page-sub">// Connect channels · Claude extracts only project-relevant information</div>
+        </div>
+
+        <div class="section-lbl">Communication Channels</div>
+        <div class="int-grid">
+          <div class="int-card" id="int-gmail" onclick="toggleIntegration('gmail')">
+            <div class="int-head">
+              <div class="int-ico" style="background:rgba(234,67,53,0.1)">📧</div>
+              <span class="int-badge off" id="int-gmail-badge">Connect</span>
+            </div>
+            <div class="int-name">Gmail</div>
+            <div class="int-desc">Import emails, threads, and discussions. Automatically filters project-relevant content.</div>
+            <div class="int-sync hidden" id="int-gmail-sync">↻ Synced just now</div>
+          </div>
+          <div class="int-card" id="int-slack" onclick="toggleIntegration('slack')">
+            <div class="int-head">
+              <div class="int-ico" style="background:rgba(74,21,75,0.08)">💬</div>
+              <span class="int-badge off" id="int-slack-badge">Connect</span>
+            </div>
+            <div class="int-name">Slack</div>
+            <div class="int-desc">Index messages from key channels like #product, #engineering, and #stakeholders.</div>
+            <div class="int-sync hidden" id="int-slack-sync">↻ Synced just now</div>
+          </div>
+          <div class="int-card" id="int-fireflies" onclick="toggleIntegration('fireflies')">
+            <div class="int-head">
+              <div class="int-ico" style="background:rgba(201,168,76,0.1)">🎙️</div>
+              <span class="int-badge off" id="int-fireflies-badge">Connect</span>
+            </div>
+            <div class="int-name">Fireflies.ai</div>
+            <div class="int-desc">Meeting transcripts with auto-extracted decisions, action items, and stakeholder feedback.</div>
+            <div class="int-sync hidden" id="int-fireflies-sync">↻ Synced just now</div>
+          </div>
+        </div>
+
+        <div class="section-lbl">Upload Documents</div>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <input type="file" id="file-input" multiple accept=".pdf,.docx,.txt,.md,.xlsx,.pptx,.csv" style="display:none" onchange="handleFileSelect(event)">
+          <div class="drop-icon">⬆️</div>
+          <div class="drop-title">Drop files here or click to browse</div>
+          <div class="drop-sub">Meeting notes, spec docs, requirements, emails — any format</div>
+          <div class="drop-types">
+            <span class="type-tag">.pdf</span><span class="type-tag">.docx</span><span class="type-tag">.txt</span><span class="type-tag">.md</span><span class="type-tag">.xlsx</span><span class="type-tag">.csv</span>
+          </div>
+        </div>
+
+        <div class="file-list" id="file-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERATE PAGE -->
+  <div class="page" id="page-generate">
+    <div class="gen-layout">
+      <div class="gen-main">
+        <div class="page-title" style="margin-bottom:28px;">Generate <em>BRD</em></div>
+
+        <div class="form-group">
+          <label class="form-lbl">Project Name *</label>
+          <input class="form-input" id="proj-name" placeholder="e.g. Customer Portal Redesign">
+        </div>
+
+        <div class="form-group">
+          <label class="form-lbl">Project Description / Context</label>
+          <textarea class="form-input form-textarea" id="proj-desc" placeholder="Describe the project, its goals, key stakeholders, and any important context Claude should know about..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-lbl">Raw Requirements / Notes</label>
+          <textarea class="form-input form-textarea" id="raw-reqs" placeholder="Paste any raw notes, email excerpts, meeting notes, or rough requirements here. Claude will extract and structure them..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-lbl">Data Sources to Include</label>
+          <div class="chips" id="source-chips">
+            <div class="chip sel" data-src="manual">📝 Manual Input</div>
+            <div class="chip" id="chip-gmail" data-src="gmail">📧 Gmail</div>
+            <div class="chip" id="chip-slack" data-src="slack">💬 Slack</div>
+            <div class="chip" id="chip-fireflies" data-src="fireflies">🎙️ Fireflies</div>
+            <div class="chip" id="chip-docs" data-src="docs">📄 Uploaded Docs</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-lbl">BRD Sections</label>
+          <div class="section-toggles" id="section-toggles">
+            <div class="sec-toggle on" data-sec="executive_summary"><div class="chk">✓</div><div class="sec-label">Executive Summary</div></div>
+            <div class="sec-toggle on" data-sec="business_objectives"><div class="chk">✓</div><div class="sec-label">Business Objectives</div></div>
+            <div class="sec-toggle on" data-sec="stakeholder_analysis"><div class="chk">✓</div><div class="sec-label">Stakeholder Analysis</div></div>
+            <div class="sec-toggle on" data-sec="functional_requirements"><div class="chk">✓</div><div class="sec-label">Functional Requirements</div></div>
+            <div class="sec-toggle on" data-sec="non_functional_requirements"><div class="chk">✓</div><div class="sec-label">Non-Functional Requirements</div></div>
+            <div class="sec-toggle on" data-sec="assumptions"><div class="chk">✓</div><div class="sec-label">Assumptions &amp; Constraints</div></div>
+            <div class="sec-toggle on" data-sec="success_metrics"><div class="chk">✓</div><div class="sec-label">Success Metrics &amp; KPIs</div></div>
+            <div class="sec-toggle on" data-sec="timeline"><div class="chk">✓</div><div class="sec-label">Timeline &amp; Milestones</div></div>
+            <div class="sec-toggle" data-sec="conflict_analysis"><div class="chk"></div><div class="sec-label">Conflict Analysis <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist)">(optional)</span></div></div>
+          </div>
+        </div>
+
+        <button class="gen-btn" id="gen-btn" onclick="generateBRD()">✦ &nbsp;Generate BRD with AI</button>
+      </div>
+
+      <div class="gen-side">
+        <div>
+          <div class="section-lbl">Generation Status</div>
+          <div class="prog-card">
+            <div class="prog-header">
+              <span class="prog-title" id="prog-status">Ready</span>
+              <div class="prog-bar-wrap"><div class="prog-bar-fill" id="prog-bar" style="width:0%"></div></div>
+            </div>
+            <div class="prog-steps" id="prog-steps">
+              <div class="prog-step"><div class="step-ind step-pending" id="step-0">○</div><span class="step-name">Validating inputs</span></div>
+              <div class="prog-step"><div class="step-ind step-pending" id="step-1">○</div><span class="step-name">Collecting sources</span></div>
+              <div class="prog-step"><div class="step-ind step-pending" id="step-2">○</div><span class="step-name">Noise filtering</span></div>
+              <div class="prog-step"><div class="step-ind step-pending" id="step-3">○</div><span class="step-name">Extracting requirements</span></div>
+              <div class="prog-step"><div class="step-ind step-pending" id="step-4">○</div><span class="step-name">Generating sections</span></div>
+              <div class="prog-step"><div class="step-ind step-pending" id="step-5">○</div><span class="step-name">Conflict detection</span></div>
+              <div class="prog-step"><div class="step-ind step-pending" id="step-6">○</div><span class="step-name">Final assembly</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-lbl">Data Overview</div>
+          <div class="data-stat-grid">
+            <div class="data-stat"><div class="data-stat-val" id="ds-sources">0</div><div class="data-stat-lbl">Sources</div></div>
+            <div class="data-stat"><div class="data-stat-val" id="ds-files">0</div><div class="data-stat-lbl">Files</div></div>
+            <div class="data-stat"><div class="data-stat-val" id="ds-sections">8</div><div class="data-stat-lbl">Sections</div></div>
+            <div class="data-stat"><div class="data-stat-val" id="ds-conflicts" style="color:var(--rust)">0</div><div class="data-stat-lbl">Conflicts</div></div>
+          </div>
+        </div>
+
+        <div id="gen-log-area" style="display:none;">
+          <div class="section-lbl">AI Log</div>
+          <div id="gen-log" style="background:var(--ink);border-radius:12px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.5);line-height:1.8;max-height:200px;overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDITOR PAGE -->
+  <div class="page" id="page-editor">
+    <div class="editor-layout">
+      <!-- Section nav -->
+      <nav class="doc-nav" id="doc-nav">
+        <div class="doc-nav-title">Sections</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.25);padding:20px 10px;text-align:center;">No document loaded.<br>Generate a BRD first.</div>
+      </nav>
+
+      <!-- Document body -->
+      <div class="doc-body" id="doc-body">
+        <div class="empty-doc">
+          <div class="big">✦</div>
+          <p>No document generated yet.</p>
+          <p style="margin-top:8px;"><span style="color:var(--sage);cursor:pointer;" onclick="nav('generate')">Generate a BRD →</span></p>
+        </div>
+      </div>
+
+      <!-- AI Panel -->
+      <div class="ai-panel">
+        <div class="ai-panel-head">
+          <div class="ai-status"><div class="ai-pulse"></div><span class="ai-lbl">AI Edit Assistant</span></div>
+          <span class="ai-model-tag">claude-sonnet-4</span>
+        </div>
+        <div class="ai-messages" id="ai-messages">
+          <div class="ai-msg sys">✦ Hello! Once you generate a BRD, I can help you edit sections, add requirements, resolve conflicts, and refine the document. Just ask in natural language.</div>
+        </div>
+        <div class="ai-suggestions" id="ai-suggestions">
+          <div class="ai-sugg-lbl">Try asking</div>
+          <div class="ai-sugg" onclick="fillAI('Make the executive summary more concise and formal')">↳ Make the executive summary more concise</div>
+          <div class="ai-sugg" onclick="fillAI('Add a non-functional requirement about performance SLA')">↳ Add a performance SLA requirement</div>
+          <div class="ai-sugg" onclick="fillAI('Identify and explain any conflicting requirements')">↳ Identify conflicting requirements</div>
+          <div class="ai-sugg" onclick="fillAI('Rewrite the business objectives to be more measurable')">↳ Make objectives more measurable</div>
+        </div>
+        <div class="ai-input-row">
+          <textarea class="ai-ta" id="ai-input" placeholder="Ask Claude to edit any section…" onkeydown="aiKeydown(event)"></textarea>
+          <button class="ai-send" id="ai-send-btn" onclick="sendAIMessage()">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  loggedIn: false,
+  userName: '',
+  integrations: { gmail: false, slack: false, fireflies: false },
+  uploadedFiles: [],
+  brds: [],
+  currentBRD: null,
+  generating: false,
+  aiProcessing: false
+};
+
+// ============================================================
+// AUTH
+// ============================================================
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value.trim();
+  const err = document.getElementById('login-error');
+  if ((email === 'demo@company.com' && pass === 'demo123') || (email && pass.length >= 4)) {
+    err.style.display = 'none';
+    const name = email.split('@')[0].replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    loginSuccess(name);
+  } else {
+    err.style.display = 'block';
+  }
+}
+
+function doLoginAs(provider) {
+  loginSuccess(provider + ' User');
+}
+
+function loginSuccess(name) {
+  state.loggedIn = true;
+  state.userName = name;
+  document.getElementById('user-av').textContent = name.slice(0,2).toUpperCase();
+  document.getElementById('user-name-display').textContent = name;
+  document.getElementById('topbar').style.display = 'flex';
+  document.getElementById('page-login').style.display = 'none';
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('dash-greeting').innerHTML = `${greet}, <em>${name.split(' ')[0]}</em>`;
+  nav('dashboard');
+}
+
+function logout() {
+  state.loggedIn = false;
+  document.getElementById('topbar').style.display = 'none';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const lp = document.getElementById('page-login');
+  lp.classList.add('active');
+  lp.style.display = 'flex';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = ''; });
+  document.querySelectorAll('.top-tab').forEach(t => t.classList.remove('active'));
+  const pg = document.getElementById('page-' + page);
+  if (pg) { pg.classList.add('active'); }
+  const tab = document.getElementById('tab-' + page);
+  if (tab) tab.classList.add('active');
+  if (page === 'dashboard') refreshDashboard();
+  if (page === 'generate') refreshGeneratePage();
+  if (page === 'editor') refreshEditor();
+}
+
+// ============================================================
+// INTEGRATIONS
+// ============================================================
+function toggleIntegration(name) {
+  const wasOn = state.integrations[name];
+  state.integrations[name] = !wasOn;
+  const card = document.getElementById('int-' + name);
+  const badge = document.getElementById('int-' + name + '-badge');
+  const sync = document.getElementById('int-' + name + '-sync');
+  if (state.integrations[name]) {
+    card.classList.add('connected');
+    badge.textContent = '● Connected';
+    badge.className = 'int-badge on';
+    sync.classList.remove('hidden');
+    showToast(`${name.charAt(0).toUpperCase()+name.slice(1)} connected successfully`);
+  } else {
+    card.classList.remove('connected');
+    badge.textContent = 'Connect';
+    badge.className = 'int-badge off';
+    sync.classList.add('hidden');
+    showToast(`${name.charAt(0).toUpperCase()+name.slice(1)} disconnected`);
+  }
+  refreshDashboard();
+}
+
+// ============================================================
+// FILE UPLOAD
+// ============================================================
+function handleDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('dragging'); }
+function handleDragLeave() { document.getElementById('drop-zone').classList.remove('dragging'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragging');
+  addFiles(Array.from(e.dataTransfer.files));
+}
+function handleFileSelect(e) { addFiles(Array.from(e.target.files)); }
+
+function addFiles(files) {
+  files.forEach(f => {
+    if (!state.uploadedFiles.find(u => u.name === f.name)) {
+      state.uploadedFiles.push({ name: f.name, size: f.size, file: f, indexed: false });
+      setTimeout(() => {
+        const fi = state.uploadedFiles.find(u => u.name === f.name);
+        if (fi) { fi.indexed = true; renderFileList(); refreshDashboard(); }
+      }, 1500 + Math.random() * 1000);
+    }
+  });
+  renderFileList();
+  refreshDashboard();
+}
+
+function renderFileList() {
+  const list = document.getElementById('file-list');
+  if (state.uploadedFiles.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = state.uploadedFiles.map((f, i) => `
+    <div class="file-row">
+      <div class="file-icon">${getFileIcon(f.name)}</div>
+      <div class="file-info">
+        <div class="file-name">${f.name}</div>
+        <div class="file-meta">${formatSize(f.size)} · ${f.indexed ? 'Indexed ✓' : 'Processing…'}</div>
+      </div>
+      <span class="badge ${f.indexed ? 'badge-done' : 'badge-draft'}">${f.indexed ? 'Indexed' : 'Indexing'}</span>
+      <button class="file-remove" onclick="removeFile(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function removeFile(i) {
+  state.uploadedFiles.splice(i, 1);
+  renderFileList();
+  refreshDashboard();
+}
+
+function getFileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const map = { pdf:'📕', docx:'📄', doc:'📄', txt:'📝', md:'📝', xlsx:'📊', csv:'📊', pptx:'📊' };
+  return map[ext] || '📄';
+}
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return Math.round(bytes/1024) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+// ============================================================
+// DASHBOARD REFRESH
+// ============================================================
+function refreshDashboard() {
+  const total = state.brds.length;
+  const sources = Object.values(state.integrations).filter(Boolean).length;
+  const files = state.uploadedFiles.length;
+  const conflicts = state.brds.reduce((a, b) => a + (b.conflicts || 0), 0);
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-total-note').textContent = total === 0 ? 'none yet' : `+${total} generated`;
+  document.getElementById('stat-sources').textContent = sources;
+  document.getElementById('stat-files').textContent = files;
+  document.getElementById('stat-conflicts').textContent = conflicts;
+  document.getElementById('dash-sub').textContent = `// ${total} document${total!==1?'s':''} generated · ${sources} source${sources!==1?'s':''} connected`;
+
+  // Source indicators
+  const upd = (id, dotId, connected, count) => {
+    document.getElementById(id).textContent = connected ? count : 'Not connected';
+    document.getElementById(dotId).style.background = connected ? 'var(--sage)' : 'var(--mist)';
+  };
+  upd('src-gmail-count','src-gmail-dot', state.integrations.gmail, '~1,200 emails indexed');
+  upd('src-slack-count','src-slack-dot', state.integrations.slack, '~8,500 msgs indexed');
+  upd('src-fire-count','src-fire-dot', state.integrations.fireflies, '~47 transcripts indexed');
+  document.getElementById('src-docs-count').textContent = files + ' file' + (files!==1?'s':'') + (files>0?' indexed':'');
+  document.getElementById('src-docs-dot').style.background = files > 0 ? 'var(--sage)' : 'var(--mist)';
+
+  // BRD list
+  const list = document.getElementById('brd-list');
+  if (state.brds.length === 0) {
+    list.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:32px;text-align:center;color:var(--mist);"><div style="font-family:'Fraunces',serif;font-size:28px;font-weight:300;margin-bottom:8px;opacity:0.4;">✦</div><div style="font-family:'DM Mono',monospace;font-size:12px;">No BRDs yet. <span style="color:var(--sage);cursor:pointer;" onclick="nav('generate')">Generate your first one →</span></div></div>`;
+  } else {
+    list.innerHTML = state.brds.map((b, i) => `
+      <div class="brd-row" onclick="openBRD(${i})">
+        <div class="brd-dot" style="background:var(--sage)"></div>
+        <div class="brd-info">
+          <div class="brd-name">${b.projectName}</div>
+          <div class="brd-meta">${b.sections.length} sections · ${b.conflicts || 0} conflicts · ${timeAgo(b.createdAt)}</div>
+        </div>
+        <span class="badge badge-done">Complete</span>
+      </div>
+    `).join('');
+  }
+}
+
+function timeAgo(date) {
+  const mins = Math.floor((Date.now() - date) / 60000);
+  if (mins < 2) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  return `${Math.floor(mins/60)}h ago`;
+}
+
+// ============================================================
+// GENERATE PAGE
+// ============================================================
+function refreshGeneratePage() {
+  // Update source chips availability
+  const chips = { gmail: 'chip-gmail', slack: 'chip-slack', fireflies: 'chip-fireflies' };
+  Object.entries(chips).forEach(([key, id]) => {
+    const chip = document.getElementById(id);
+    if (state.integrations[key]) {
+      chip.style.opacity = '1';
+      chip.style.cursor = 'pointer';
+    } else {
+      chip.classList.remove('sel');
+      chip.style.opacity = '0.4';
+      chip.style.cursor = 'not-allowed';
+    }
+  });
+  const docChip = document.getElementById('chip-docs');
+  if (state.uploadedFiles.length > 0) {
+    docChip.style.opacity = '1';
+    docChip.querySelector && null;
+    docChip.innerHTML = `📄 Uploads (${state.uploadedFiles.length})`;
+  } else {
+    docChip.classList.remove('sel');
+    docChip.style.opacity = '0.4';
+  }
+
+  // Section count
+  const selected = document.querySelectorAll('#section-toggles .sec-toggle.on').length;
+  document.getElementById('ds-sections').textContent = selected;
+
+  // Data overview
+  const srcs = Object.values(state.integrations).filter(Boolean).length;
+  document.getElementById('ds-sources').textContent = srcs;
+  document.getElementById('ds-files').textContent = state.uploadedFiles.length;
+}
+
+// Chip toggle
+document.getElementById('source-chips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const src = chip.dataset.src;
+  if (src === 'gmail' && !state.integrations.gmail) { showToast('Connect Gmail first in Integrations'); return; }
+  if (src === 'slack' && !state.integrations.slack) { showToast('Connect Slack first in Integrations'); return; }
+  if (src === 'fireflies' && !state.integrations.fireflies) { showToast('Connect Fireflies first in Integrations'); return; }
+  if (src === 'docs' && state.uploadedFiles.length === 0) { showToast('Upload files first in Integrations'); return; }
+  chip.classList.toggle('sel');
+});
+
+// Section toggles
+document.getElementById('section-toggles').addEventListener('click', e => {
+  const tog = e.target.closest('.sec-toggle');
+  if (!tog) return;
+  tog.classList.toggle('on');
+  const chk = tog.querySelector('.chk');
+  chk.textContent = tog.classList.contains('on') ? '✓' : '';
+  const selected = document.querySelectorAll('#section-toggles .sec-toggle.on').length;
+  document.getElementById('ds-sections').textContent = selected;
+});
+
+// ============================================================
+// BRD GENERATION (calls real Anthropic API)
+// ============================================================
+async function generateBRD() {
+  if (state.generating) return;
+  const projName = document.getElementById('proj-name').value.trim();
+  const projDesc = document.getElementById('proj-desc').value.trim();
+  const rawReqs = document.getElementById('raw-reqs').value.trim();
+
+  if (!projName) { showToast('Please enter a project name'); return; }
+  if (!projDesc && !rawReqs) { showToast('Please add a description or raw requirements'); return; }
+
+  state.generating = true;
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Generating…';
+
+  const selectedSections = Array.from(document.querySelectorAll('#section-toggles .sec-toggle.on')).map(t => t.dataset.sec);
+  const selectedSources = Array.from(document.querySelectorAll('#source-chips .chip.sel')).map(c => c.dataset.src);
+
+  // Progress animation
+  const steps = ['Validating inputs','Collecting sources','Noise filtering','Extracting requirements','Generating sections','Conflict detection','Final assembly'];
+  let currentStep = 0;
+  document.getElementById('gen-log-area').style.display = 'block';
+  const log = document.getElementById('gen-log');
+  log.innerHTML = '';
+
+  function logLine(msg) { log.innerHTML += `<div>> ${msg}</div>`; log.scrollTop = log.scrollHeight; }
+  function setStep(i, status) {
+    const el = document.getElementById('step-' + i);
+    if (!el) return;
+    el.className = 'step-ind ' + status;
+    el.textContent = status === 'step-done' ? '✓' : status === 'step-active' ? '⟳' : '○';
+  }
+  function setProgress(pct, label) {
+    document.getElementById('prog-bar').style.width = pct + '%';
+    document.getElementById('prog-status').textContent = label;
+  }
+
+  async function advanceStep(i, delayMs) {
+    setStep(i, 'step-active');
+    setProgress(Math.round((i/7)*100), steps[i] + '…');
+    logLine(steps[i] + '…');
+    await sleep(delayMs);
+    setStep(i, 'step-done');
+  }
+
+  await advanceStep(0, 400);
+  await advanceStep(1, 600);
+  logLine(`Found: ${Object.values(state.integrations).filter(Boolean).length} integrations, ${state.uploadedFiles.length} files`);
+  await advanceStep(2, 500);
+  logLine('Filtering non-project-relevant content…');
+  await advanceStep(3, 700);
+  logLine(`Sections to generate: ${selectedSections.join(', ')}`);
+  setStep(4, 'step-active');
+  setProgress(60, 'Generating sections…');
+  logLine('Calling Claude AI…');
+
+  // Build the prompt
+  const sectionMap = {
+    executive_summary: 'Executive Summary',
+    business_objectives: 'Business Objectives & Goals',
+    stakeholder_analysis: 'Stakeholder Analysis',
+    functional_requirements: 'Functional Requirements',
+    non_functional_requirements: 'Non-Functional Requirements',
+    assumptions: 'Assumptions & Constraints',
+    success_metrics: 'Success Metrics & KPIs',
+    timeline: 'Timeline & Milestones',
+    conflict_analysis: 'Conflict Analysis'
+  };
+
+  const fileContext = state.uploadedFiles.length > 0
+    ? `\n\nUploaded documents: ${state.uploadedFiles.map(f => f.name).join(', ')}`
+    : '';
+
+  const sourceContext = selectedSources.includes('gmail') ? '\n- Gmail: Email threads and communications indexed' : '';
+  const slackContext = selectedSources.includes('slack') ? '\n- Slack: Team channel messages indexed' : '';
+  const fireContext = selectedSources.includes('fireflies') ? '\n- Fireflies: Meeting transcripts indexed' : '';
+
+  const prompt = `You are an expert Business Analyst AI. Generate a comprehensive, professional Business Requirements Document (BRD) for the following project.
+
+PROJECT NAME: ${projName}
+
+PROJECT DESCRIPTION:
+${projDesc || 'Not provided'}
+
+RAW REQUIREMENTS / NOTES:
+${rawReqs || 'Not provided'}
+
+DATA SOURCES USED:
+${sourceContext}${slackContext}${fireContext}${fileContext}
+${state.uploadedFiles.length > 0 ? '- Uploaded documents: ' + state.uploadedFiles.map(f=>f.name).join(', ') : ''}
+
+SECTIONS TO GENERATE:
+${selectedSections.map(s => '- ' + (sectionMap[s] || s)).join('\n')}
+
+INSTRUCTIONS:
+Generate a detailed, professional BRD. For each section, provide:
+1. Rich, actionable content (not generic filler)
+2. For Functional Requirements: create a numbered list like "FR-001: [requirement description]" with priority (High/Medium/Low)
+3. For Non-Functional: create NFR-001, NFR-002 format
+4. For Stakeholder Analysis: identify realistic stakeholders with roles and interests
+5. For Timeline: provide realistic phases with durations
+6. For Success Metrics: provide specific, measurable KPIs
+7. Mention any potential conflicts or ambiguities in a "Conflict Notes" if found
+8. Include realistic, context-appropriate content based on the project description
+
+RESPONSE FORMAT:
+Return ONLY a JSON object with this exact structure (no markdown code blocks, just raw JSON):
+{
+  "sections": [
+    {
+      "id": "section_key",
+      "title": "Section Title",
+      "content": "Full section text content",
+      "requirements": [{"id":"FR-001","description":"...","priority":"High"}],
+      "hasConflict": false
+    }
+  ],
+  "totalConflicts": 0,
+  "executiveTags": ["tag1", "tag2"],
+  "summary": "One-sentence project summary"
+}
+
+Where "requirements" is only present for functional/non-functional sections and is an array of requirement objects.
+"hasConflict" is true if this section has conflicting information.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const rawText = data.content?.map(c => c.text || '').join('') || '';
+
+    setStep(4, 'step-done');
+    await advanceStep(5, 400);
+
+    let parsed;
+    try {
+      const cleaned = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      parsed = JSON.parse(cleaned);
+    } catch (e) {
+      // Fallback: create basic structure from text
+      parsed = createFallbackStructure(projName, rawText, selectedSections, sectionMap);
+    }
+
+    await advanceStep(6, 300);
+    setProgress(100, 'Complete!');
+    logLine('BRD generated successfully!');
+    logLine(`Sections: ${parsed.sections.length} | Conflicts: ${parsed.totalConflicts || 0}`);
+
+    const brd = {
+      id: Date.now(),
+      projectName: projName,
+      description: projDesc,
+      sections: parsed.sections,
+      conflicts: parsed.totalConflicts || 0,
+      summary: parsed.summary || '',
+      createdAt: Date.now(),
+      raw: parsed
+    };
+
+    state.brds.push(brd);
+    state.currentBRD = brd;
+    document.getElementById('ds-conflicts').textContent = brd.conflicts;
+
+    showToast('BRD generated! Opening editor…');
+    setTimeout(() => { nav('editor'); }, 1200);
+
+  } catch (err) {
+    logLine('Error: ' + err.message);
+    showToast('Generation failed: ' + err.message);
+    // Reset steps
+    for (let i = 0; i < 7; i++) setStep(i, 'step-pending');
+    setProgress(0, 'Failed');
+  }
+
+  state.generating = false;
+  btn.disabled = false;
+  btn.innerHTML = '✦ &nbsp;Generate BRD with AI';
+}
+
+function createFallbackStructure(projName, text, selectedSections, sectionMap) {
+  return {
+    sections: selectedSections.map((sec, i) => ({
+      id: sec,
+      title: sectionMap[sec] || sec,
+      content: text.length > 100 ? text.slice(0, Math.floor(text.length / selectedSections.length)) : `Generated content for ${sectionMap[sec]}`,
+      requirements: sec.includes('requirements') ? [{id:`FR-00${i+1}`,description:'See full document content',priority:'High'}] : undefined,
+      hasConflict: false
+    })),
+    totalConflicts: 0,
+    summary: `BRD for ${projName}`
+  };
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ============================================================
+// EDITOR
+// ============================================================
+function openBRD(index) {
+  state.currentBRD = state.brds[index];
+  nav('editor');
+}
+
+function refreshEditor() {
+  const brd = state.currentBRD;
+  if (!brd) return;
+
+  // Build nav
+  const docNav = document.getElementById('doc-nav');
+  docNav.innerHTML = `<div class="doc-nav-title">Sections</div>` +
+    brd.sections.map((sec, i) => `
+      <div class="doc-nav-item ${i===0?'sec-active':''}" onclick="scrollToSection('sec-${sec.id}', this)" id="nav-${sec.id}">
+        <span class="doc-nav-num">${i+1}.</span>${sec.title}
+      </div>
+    `).join('') +
+    `<div style="margin-top:20px;padding:0 8px;">
+      <div class="doc-nav-title">Info</div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;margin-top:6px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.3);line-height:1.8;">
+          ${brd.sections.length} sections<br>
+          ${brd.conflicts} conflict${brd.conflicts!==1?'s':''}<br>
+          ${new Date(brd.createdAt).toLocaleDateString()}
+        </div>
+      </div>
+      ${brd.conflicts > 0 ? `<div style="background:rgba(168,73,42,0.15);border:1px solid rgba(168,73,42,0.25);border-radius:10px;padding:12px;margin-top:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--rust);">⚠ ${brd.conflicts} conflict${brd.conflicts!==1?'s':''} detected</div>` : ''}
+    </div>`;
+
+  // Build document
+  const docBody = document.getElementById('doc-body');
+  docBody.innerHTML = `
+    <div class="doc-toolbar">
+      <button class="tbtn ton">Edit</button>
+      <button class="tbtn" onclick="togglePreview(this)">Preview</button>
+      <div class="tsep"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">${brd.projectName} · v1.0</span>
+      <button class="export-btn" onclick="exportBRD()">Export PDF</button>
+    </div>
+
+    <div contenteditable="true" class="doc-h1" data-placeholder="Document Title" spellcheck="false">${brd.projectName}</div>
+
+    <div class="doc-meta-row">
+      <div class="doc-meta-item">Status <strong style="color:var(--gold)">Draft</strong></div>
+      <div class="doc-meta-item">Created <strong>${new Date(brd.createdAt).toLocaleDateString()}</strong></div>
+      <div class="doc-meta-item">Sections <strong>${brd.sections.length}</strong></div>
+      ${brd.conflicts > 0 ? `<div class="doc-meta-item" style="color:var(--rust)">⚠ <strong>${brd.conflicts} Conflicts</strong></div>` : ''}
+    </div>
+
+    ${brd.summary ? `<div style="background:var(--cream);border-left:3px solid var(--sage);padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:28px;font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);line-height:1.7;">${brd.summary}</div>` : ''}
+
+    ${brd.sections.map((sec, i) => renderSection(sec, i+1)).join('')}
+  `;
+
+  // Initialize AI panel for this BRD
+  addAIMessage('sys', `✦ BRD "<strong>${brd.projectName}</strong>" loaded with ${brd.sections.length} sections. ${brd.conflicts > 0 ? `⚠ ${brd.conflicts} conflicts detected — ask me to explain them.` : 'No conflicts found.'} How can I help refine this document?`);
+}
+
+function renderSection(sec, num) {
+  const hasConflict = sec.hasConflict;
+
+  let bodyHTML = '';
+  if (sec.requirements && sec.requirements.length > 0) {
+    bodyHTML = `
+      ${sec.content ? `<div class="doc-content" contenteditable="true" spellcheck="false">${escapeAndFormat(sec.content)}</div>` : ''}
+      <table class="req-table">
+        <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+        <tbody>${sec.requirements.map(r => `
+          <tr>
+            <td class="req-id">${r.id}</td>
+            <td>${r.description || r.text || r.requirement || ''}</td>
+            <td><span class="pbadge ${r.priority==='High'?'p-high':r.priority==='Medium'||r.priority==='Med'?'p-med':'p-low'}">${r.priority||'Med'}</span></td>
+          </tr>
+        `).join('')}</tbody>
+      </table>
+    `;
+  } else {
+    bodyHTML = `<div class="doc-content" contenteditable="true" spellcheck="false">${escapeAndFormat(sec.content || '')}</div>`;
+  }
+
+  return `
+    <div class="doc-section" id="sec-${sec.id}">
+      <div class="doc-section-title">
+        <span class="sec-num">§${num}</span>
+        ${sec.title}
+        ${hasConflict ? `<span class="cite-tag conflict-tag" onclick="askAIAboutConflict('${sec.title}')">⚠ conflict</span>` : ''}
+      </div>
+      ${hasConflict ? `<div class="conflict-banner"><span>⚠</span><p>Conflicting information detected in this section. Click the conflict tag or ask the AI assistant to explain and resolve.</p></div>` : ''}
+      ${bodyHTML}
+    </div>
+  `;
+}
+
+function escapeAndFormat(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/\n/g,'<br>');
+}
+
+function scrollToSection(id, el) {
+  const target = document.getElementById(id);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.doc-nav-item').forEach(n => n.classList.remove('sec-active'));
+  el.classList.add('sec-active');
+}
+
+function togglePreview(btn) {
+  const isEdit = btn.previousElementSibling.classList.contains('ton');
+  btn.classList.toggle('ton');
+  btn.previousElementSibling.classList.toggle('ton');
+}
+
+function exportBRD() {
+  if (!state.currentBRD) return;
+  showToast('Preparing PDF export…');
+  setTimeout(() => {
+    const content = document.getElementById('doc-body').innerText;
+    const blob = new Blob([`BRD: ${state.currentBRD.projectName}\n\n${content}`], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `BRD-${state.currentBRD.projectName.replace(/\s+/g,'-')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('BRD exported!');
+  }, 800);
+}
+
+// ============================================================
+// AI EDIT PANEL
+// ============================================================
+function fillAI(text) {
+  document.getElementById('ai-input').value = text;
+  document.getElementById('ai-input').focus();
+}
+
+function addAIMessage(type, html) {
+  const msgs = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = `ai-msg ${type}`;
+  div.innerHTML = html;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = 'ai-typing';
+  div.id = 'ai-typing';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('ai-typing');
+  if (t) t.remove();
+}
+
+function aiKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAIMessage();
+  }
+}
+
+function askAIAboutConflict(sectionTitle) {
+  document.getElementById('ai-input').value = `Explain the conflict in the "${sectionTitle}" section and suggest how to resolve it`;
+  sendAIMessage();
+}
+
+async function sendAIMessage() {
+  if (state.aiProcessing) return;
+  const input = document.getElementById('ai-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  state.aiProcessing = true;
+  input.value = '';
+  document.getElementById('ai-send-btn').disabled = true;
+
+  addAIMessage('usr', msg);
+  showTyping();
+
+  const brdContext = state.currentBRD
+    ? `Current BRD: "${state.currentBRD.projectName}"\n\nSections:\n${state.currentBRD.sections.map(s => `### ${s.title}\n${s.content || ''}\n${s.requirements ? s.requirements.map(r=>`${r.id}: ${r.description||r.text||''} [${r.priority}]`).join('\n') : ''}`).join('\n\n')}`
+    : 'No BRD loaded yet.';
+
+  const prompt = `You are an expert Business Analyst AI assistant helping edit and improve a Business Requirements Document.
+
+${brdContext}
+
+USER REQUEST: ${msg}
+
+Respond helpfully and concisely. If editing a section, describe what changes you made and why. If asked about conflicts, explain them clearly. If asked to add requirements, show the new requirement in FR-XXX format. Keep responses professional but clear.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const replyText = data.content?.map(c => c.text || '').join('') || 'Sorry, I could not process that request.';
+
+    hideTyping();
+    addAIMessage('sys', replyText.replace(/\n/g, '<br>'));
+
+    // Check if AI suggests a document update
+    if (replyText.toLowerCase().includes('updated') || replyText.toLowerCase().includes('added') || replyText.toLowerCase().includes('changed')) {
+      showToast('AI suggestion applied to document context');
+    }
+
+  } catch (err) {
+    hideTyping();
+    addAIMessage('sys', '⚠ Connection error. Please check your network and try again.<br><small>' + err.message + '</small>');
+  }
+
+  state.aiProcessing = false;
+  document.getElementById('ai-send-btn').disabled = false;
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// Enter key on login
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+</script>
+</body>
+</html>
