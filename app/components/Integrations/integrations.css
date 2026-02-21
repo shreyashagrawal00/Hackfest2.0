@@ -191,3 +191,11 @@
   background: rgba(196, 151, 62, 0.1);
   color: #8A6920;
 }
+
+.page-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mist);
+  margin-top: 6px;
+}

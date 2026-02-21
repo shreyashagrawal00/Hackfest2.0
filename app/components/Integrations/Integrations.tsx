@@ -45,7 +45,7 @@ export default function Integrations({
       <div className="int-wrap">
         <div className="page-h">
           <div className="page-title">Data Sources & <em>Integrations</em></div>
-          <div className="page-sub">// Connect channels · Claude extracts only project-relevant information</div>
+          <div className="page-sub">Connect channels · Claude extracts only project-relevant information</div>
         </div>
 
         <div className="section-lbl">Communication Channels</div>
@@ -53,8 +53,8 @@ export default function Integrations({
           <IntegrationCard
             id="gmail"
             icon="📧"
-            name="Gmail"
-            desc="Import emails, threads, and discussions. Automatically filters project-relevant content."
+            name="Enron Email Base"
+            desc="Process signals from ~500k professional emails. Advanced noise filtering for project requirements."
             connected={integrations.gmail}
             onToggle={() => onToggleIntegration('gmail')}
             bgColor="rgba(234,67,53,0.1)"
@@ -62,8 +62,8 @@ export default function Integrations({
           <IntegrationCard
             id="slack"
             icon="💬"
-            name="Slack"
-            desc="Index messages from key channels like #product, #engineering, and #stakeholders."
+            name="Slack Archive"
+            desc="Ingest project-specific channels and direct messages. Extracts decision signals from chat."
             connected={integrations.slack}
             onToggle={() => onToggleIntegration('slack')}
             bgColor="rgba(74,21,75,0.08)"
@@ -71,8 +71,8 @@ export default function Integrations({
           <IntegrationCard
             id="fireflies"
             icon="🎙️"
-            name="Fireflies.ai"
-            desc="Meeting transcripts with auto-extracted decisions, action items, and stakeholder feedback."
+            name="AMI Transcripts"
+            desc="279 meeting transcripts with abstractive summaries. Identifies stakeholder disagreements & feature prioritization."
             connected={integrations.fireflies}
             onToggle={() => onToggleIntegration('fireflies')}
             bgColor="rgba(201,168,76,0.1)"

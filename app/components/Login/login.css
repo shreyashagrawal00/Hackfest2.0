@@ -50,6 +50,7 @@
 .login-tag {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
+  font-weight: 600;
   color: rgba(255, 255, 255, 0.25);
   letter-spacing: 0.08em;
   margin-bottom: 44px;
@@ -150,4 +151,104 @@
   font-family: 'DM Mono', monospace;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.25);
+}
+
+/* Account Selector */
+.account-selector-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  border-radius: 24px;
+}
+
+.account-selector-title {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.account-selector-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 32px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.account-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.account-avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--sage);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+}
+
+.account-info {
+  flex: 1;
+}
+
+.account-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.account-email {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.back-to-login {
+  margin-top: auto;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.25);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 10px;
+  transition: color 0.2s;
+}
+
+.back-to-login:hover {
+  color: #fff;
 }

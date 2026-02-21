@@ -31,7 +31,7 @@ export default function Dashboard({
         <div className="dash-hero-row">
           <div className="page-h">
             <div className="page-title">Good morning, <em>User</em></div>
-            <div className="page-sub">// {totalBRDs} documents generated · {sourcesCount} sources connected</div>
+            <div className="page-sub">{totalBRDs} documents generated · {sourcesCount} sources connected</div>
           </div>
           <button className="new-btn" onClick={onNavigateToGenerate}>
             ✦ &nbsp;New BRD
@@ -93,30 +93,30 @@ export default function Dashboard({
             <div className="sources-card">
               <SourceItem
                 icon="📧"
-                name="Gmail"
+                name="Gmail (Enron)"
                 connected={integrations.gmail}
-                count={integrations.gmail ? "~1,200 emails indexed" : "Not connected"}
+                count={integrations.gmail ? "~500,000 emails indexed" : "Not connected"}
                 bgColor="rgba(234,67,53,0.1)"
               />
               <SourceItem
                 icon="💬"
-                name="Slack"
+                name="Slack (Mock)"
                 connected={integrations.slack}
-                count={integrations.slack ? "~8,500 msgs indexed" : "Not connected"}
+                count={integrations.slack ? "~25,000 msgs indexed" : "Not connected"}
                 bgColor="rgba(74,21,75,0.08)"
               />
               <SourceItem
                 icon="🎙️"
-                name="Fireflies.ai"
+                name="AMI Transcripts"
                 connected={integrations.fireflies}
-                count={integrations.fireflies ? "~47 transcripts indexed" : "Not connected"}
+                count={integrations.fireflies ? "279 meetings indexed" : "Not connected"}
                 bgColor="rgba(201,168,76,0.1)"
               />
               <SourceItem
                 icon="📄"
-                name="Uploaded Docs"
+                name="Corp. Archive"
                 connected={filesCount > 0}
-                count={`${filesCount} file${filesCount !== 1 ? 's' : ''}${filesCount > 0 ? ' indexed' : ''}`}
+                count={`${filesCount > 0 ? '1.2 GB data indexed' : 'Local uploads'}`}
                 bgColor="rgba(138,155,168,0.1)"
                 isLast
               />
