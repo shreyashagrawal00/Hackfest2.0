@@ -2,20 +2,20 @@
 
 :root {
   --ink: #0C0C0E;
-  --paper: #DDD8CC;
-  --cream: #D6D1C4;
+  --paper: #F4F1EB;
+  --cream: #EDE9DF;
   --sage: #3D5A47;
   --sage-light: #547A62;
-  --sage-dim: rgba(61, 90, 71, 0.18);
+  --sage-dim: rgba(61, 90, 71, 0.12);
   --gold: #C4973E;
   --gold-light: #E2B55A;
   --rust: #A8492A;
-  --mist: #5E6E78;
-  --border: rgba(12, 12, 14, 0.18);
-  --card: #F2F0E9;
-  --shadow: 0 2px 20px rgba(12, 12, 14, 0.12);
+  --mist: #7A8C96;
+  --border: rgba(12, 12, 14, 0.1);
+  --card: #FAFAF6;
+  --shadow: 0 2px 20px rgba(12, 12, 14, 0.08);
 
-  --background: radial-gradient(circle at 50% 50%, #EBE7DC 0%, var(--paper) 100%);
+  --background: radial-gradient(circle at 50% 50%, #FAF9F6 0%, var(--paper) 100%);
   --foreground: var(--ink);
 }
 
