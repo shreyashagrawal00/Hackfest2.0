@@ -12,15 +12,18 @@ import { BRD, GmailMessage, IndexedFile, GeneratorFormData } from './types';
 
 export default function Home() {
   const [user, setUser] = useState<{ name: string; avatar: string } | null>(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [tokenClient, setTokenClient] = useState<{ requestAccessToken: () => void } | null>(null);
 
-  // Persistence: Check session on mount
+  // Centralized Google Auth Initialization (Runs once on mount)
   React.useEffect(() => {
+    // 1. Check for existing session
     const session = auth.getSession();
     if (session) {
       setUser({ name: session.name, avatar: session.name.slice(0, 2).toUpperCase() });
     }
 
-    // Load GIS script for OAuth
+    // 2. Load GIS script
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
@@ -28,14 +31,25 @@ export default function Home() {
     document.body.appendChild(script);
 
     script.onload = () => {
+      setScriptLoaded(true);
       if (window.google && window.google.accounts) {
+        // Initialize Token Client for Gmail
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
           scope: 'https://www.googleapis.com/auth/gmail.readonly',
-          callback: (tokenResponse: { access_token?: string }) => {
+          callback: (tokenResponse: { access_token?: string; error?: string }) => {
             if (tokenResponse && tokenResponse.access_token) {
               setGmailToken(tokenResponse.access_token);
               setIntegrations(prev => ({ ...prev, gmail: true }));
+
+              // Ensure user is set if we are logging in via this token flow
+              const currentSession = auth.getSession();
+              if (currentSession) {
+                setUser(prev => prev || {
+                  name: currentSession.name,
+                  avatar: currentSession.name.slice(0, 2).toUpperCase()
+                });
+              }
             }
           },
         });
@@ -47,9 +61,7 @@ export default function Home() {
       const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
       if (existingScript) document.body.removeChild(existingScript);
     };
-  }, []);
-
-  const [tokenClient, setTokenClient] = useState<{ requestAccessToken: () => void } | null>(null);
+  }, []); // Empty dependency array prevents infinite loops
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [integrations, setIntegrations] = useState({ gmail: false, slack: false, fireflies: false });
@@ -456,7 +468,11 @@ export default function Home() {
     }, 1500);
   };
 
-  if (!user) return <Login onLogin={handleLogin} />;
+  if (!user) return <Login
+    onLogin={handleLogin}
+    scriptLoaded={scriptLoaded}
+    tokenClient={tokenClient}
+  />;
 
   return (
     <>
@@ -500,6 +516,7 @@ export default function Home() {
             uploadedFiles={uploadedFiles}
             realEmails={realEmails}
             fetchingMails={fetchingMails}
+            onConnectGmail={handleConnectGmail}
           />
         )}
         {activeTab === 'editor' && (

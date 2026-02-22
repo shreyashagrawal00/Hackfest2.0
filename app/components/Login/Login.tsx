@@ -7,9 +7,11 @@ import { auth } from '../../utils/auth';
 
 interface LoginProps {
   onLogin: (name: string, isSocial?: boolean, accessToken?: string) => void;
+  scriptLoaded: boolean;
+  tokenClient: { requestAccessToken: () => void } | null;
 }
 
-export default function Login({ onLogin }: LoginProps) {
+export default function Login({ onLogin, scriptLoaded, tokenClient }: LoginProps) {
   const [email, setEmail] = useState('demo@company.com');
   const [password, setPassword] = useState('demo123');
   const [error, setError] = useState('');
@@ -17,11 +19,10 @@ export default function Login({ onLogin }: LoginProps) {
   const [loading, setLoading] = useState(false);
   const [showAccountSelector, setShowAccountSelector] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState('');
-  const [tokenClient, setTokenClient] = useState<{ requestAccessToken: () => void } | null>(null);
 
   const handleGoogleResponse = React.useCallback((response: { credential: string }) => {
     try {
-      // Decode JWT (standard way for Google One Tap / Button)
+      // Decode JWT
       const base64Url = response.credential.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
@@ -29,74 +30,40 @@ export default function Login({ onLogin }: LoginProps) {
       }).join(''));
 
       const user = JSON.parse(jsonPayload);
-      onLogin(user.name, true);
+
+      // Store user info in auth session
       auth.setSession({ email: user.email, name: user.name });
 
-      // Automatically trigger Gmail permission request
-      if (tokenClient) {
-        setTimeout(() => {
-          tokenClient.requestAccessToken();
-        }, 500);
-      }
+      // Simply log in. Gmail connection will be triggered by a direct user click 
+      // in the Integrations tab or the Generator chips to avoid browser popup blocking.
+      onLogin(user.name, true);
     } catch (err) {
       setError('Failed to process Google login.');
     }
-  }, [onLogin, tokenClient]);
+  }, [onLogin]);
 
   useEffect(() => {
-    // Load Google Identity Services script
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
+    // Render Google button once script is loaded and component mounts
+    if (scriptLoaded && window.google && window.google.accounts) {
+      window.google.accounts.id.initialize({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+        callback: handleGoogleResponse,
+        auto_select: false,
+        itp_support: true,
+      });
 
-    script.onload = () => {
-      if (window.google && window.google.accounts) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
-          callback: handleGoogleResponse,
-          auto_select: false,
-          itp_support: true,
+      const parent = document.getElementById('google-btn-container');
+      if (parent) {
+        window.google.accounts.id.renderButton(parent, {
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'rectangular',
+          width: 280
         });
-
-        // Render the official Google button
-        const parent = document.getElementById('google-btn-container');
-        if (parent) {
-          window.google.accounts.id.renderButton(parent, {
-            theme: 'outline',
-            size: 'large',
-            text: 'signin_with',
-            shape: 'rectangular',
-            width: 280
-          });
-        }
-
-        // Initialize Token Client for Gmail Scopes
-        const client = window.google.accounts.oauth2.initTokenClient({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
-          scope: 'https://www.googleapis.com/auth/gmail.readonly',
-          callback: (tokenResponse: { access_token?: string; error?: string }) => {
-            console.log('Token Client Response:', tokenResponse);
-            if (tokenResponse && tokenResponse.access_token) {
-              const session = auth.getSession();
-              if (session) {
-                console.log('Got Access Token, calling onLogin...');
-                onLogin(session.name, true, tokenResponse.access_token);
-              }
-            } else if (tokenResponse.error) {
-              console.error('Token Error:', tokenResponse.error);
-            }
-          },
-        });
-        setTokenClient(client);
       }
-    };
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [handleGoogleResponse, onLogin]);
+    }
+  }, [scriptLoaded, handleGoogleResponse]);
 
   const mockAccounts = {
     'Slack': [

@@ -5,15 +5,16 @@ import './generator.css';
 import { GmailMessage, GeneratorFormData, IndexedFile } from '@/app/types';
 
 interface GeneratorFormProps {
-  onGenerate: (data: GeneratorFormData) => void;
+  onGenerate: (formData: GeneratorFormData) => void;
   generating: boolean;
   integrations: { [key: string]: boolean };
   uploadedFiles: IndexedFile[];
-  realEmails?: GmailMessage[];
+  realEmails: GmailMessage[];
   fetchingMails?: boolean;
+  onConnectGmail?: () => void;
 }
 
-export default function GeneratorForm({ onGenerate, generating, integrations, uploadedFiles, realEmails, fetchingMails }: GeneratorFormProps) {
+export default function GeneratorForm({ onGenerate, generating, integrations, uploadedFiles, realEmails, fetchingMails, onConnectGmail }: GeneratorFormProps) {
   const [formData, setFormData] = useState<GeneratorFormData>({
     projectName: '',
     projectDesc: '',
@@ -129,7 +130,10 @@ FW: Quarterly Newsletter - Internal Only
   }, [integrations.gmail]);
 
   const toggleSource = (src: string) => {
-    if (src === 'gmail' && !integrations.gmail) return;
+    if (src === 'gmail' && !integrations.gmail) {
+      if (onConnectGmail) onConnectGmail();
+      return;
+    }
     if (src === 'slack' && !integrations.slack) return;
     if (src === 'fireflies' && !integrations.fireflies) return;
     if (src === 'docs' && uploadedFiles.length === 0) return;
@@ -152,53 +156,58 @@ FW: Quarterly Newsletter - Internal Only
   };
 
   const magicFill = () => {
-    // 1. Prepare default "High Quality" content
-    let name = 'SmartInventory_X1_Control';
-    let desc = 'Development of an AI-driven inventory optimization layer that integrates with existing ERP systems via REST APIs. The goal is to reduce stockouts by 40% and optimize warehouse footprint by implementing predictive demand forecasting.';
-    let reqs = `[MAGIC_FILL_ACTIVE]: Context extracted from project-relevant streams...
+    const selectedMails = getSelectedEmailData();
+    const hasMails = selectedMails.length > 0;
+    const hasFiles = uploadedFiles.length > 0;
 
----
-EMAIL: sarah.chen@logistics-core.biz
-Subject: Critical Bottleneck in Q3 Fulfillment
+    // 1. Prepare default content
+    let name = 'Strategic Intelligence Initiative';
+    let desc = 'A consolidated requirements gathering project synthesizing multiple organizational data streams into a unified technical vision.';
+    let reqs = `[SYSTEM_SIGNAL]: Data stream analysis active. Baseline established.`;
 
-Team, we are seeing a 15% lag in real-time sync between the warehouse floor and the POS system. For the X1 module, the dashboard must support sub-second latency for inventory lookups. Also, the mobile app needs an offline-first mode for scan-ins in low-connectivity zones.
-
----
-MEETING NOTES: Architecture Sync (2/21/2026)
-- The forecasting engine should use a Transformer-based model (LSTM fallback).
-- Data privacy: All PII must be encrypted at rest (AES-256).
-- Scalability: System must handle 50k SKU updates per minute during peak loads.
-
----
-TRANSCRIPT: User Research Session
-- "I need to be able to see the audit trail for every single stock movement."
-- "The UI shouldn't feel like a spreadsheet. Give me a visual map of the floor."`;
-
-    // 2. Override if we have SELECTED Gmail data
-    const selected = getSelectedEmailData();
-    if (selected.length > 0) {
-      name = `BRD_Input_${selected[0].subject.replace(/RE:|FW:/gi, '').trim() || 'Gmail_Project'}`;
-      desc = `Sophisticated extraction active. Analyzing ${selected.length} selected communication threads to synthesize business requirements and stakeholder constraints. Focus: ${selected[0].subject}.`;
-      reqs = selected.map(m => `[GMAIL_SIGNAL]: ${m.subject}\nContent: ${m.snippet || 'Body content filtered for noise.'}`).join('\n\n---\n\n');
+    // 2. Build Context from Emails
+    let emailContext = '';
+    if (hasMails) {
+      const topSubject = selectedMails[0].subject.replace(/RE:|FW:/gi, '').trim();
+      name = `BRD_${topSubject.replace(/\s+/g, '_')}`;
+      desc = `Consolidated extraction active. Analyzing ${selectedMails.length} selected communication thread(s) to synthesize business goals. Primary focus: ${topSubject}.`;
+      emailContext = selectedMails.map(m => {
+        const cleanSubj = m.subject.replace(/RE:|FW:/gi, '').trim();
+        return `[GMAIL_SIGNAL]: ${cleanSubj}\nCONTEXT: ${m.snippet || 'Body content filtered.'}`;
+      }).join('\n\n');
     }
-    // 3. Override if we have UPLOADED files
-    else if (uploadedFiles.length > 0) {
-      name = `BRD_Analysis_${uploadedFiles[0].name.split('.')[0]}`;
-      desc = `Comprehensive analysis of ${uploadedFiles.length} uploaded source document(s). Requirements are being mapped against organizational standards and existing infrastructure patterns identified in ${uploadedFiles[0].name}.`;
-      reqs = `[DOC_SCAN_ACTIVE]: Context extraction from ${uploadedFiles.map(f => f.name).join(', ')}
 
----
-- Identified 12 potential functional constraints.
-- Mapped 4 security requirements regarding data residency.
-- Extracted success metrics from the executive summary portion of ${uploadedFiles[0].name}.`;
+    // 3. Build Context from Files
+    let fileContext = '';
+    if (hasFiles) {
+      if (!hasMails) {
+        const mainFile = uploadedFiles[0].name.split('.')[0];
+        name = `${mainFile}_Extraction`;
+      }
+      desc += ` ${hasMails ? 'Additionally' : 'Currently'} processing ${uploadedFiles.length} uploaded document(s) for structural constraints and compliance mapping.`;
+
+      const fileList = uploadedFiles.map(f => `- ${f.name} (${(f.size / 1024).toFixed(1)} KB)`).join('\n');
+      fileContext = `[DOC_INTELLIGENCE]: ${uploadedFiles.length} file(s) indexed\nFILES:\n${fileList}\n\nANALYSIS: Extracted functional requirements and architectural patterns from ${uploadedFiles[0].name}.`;
+    }
+
+    // 4. Final Composition (MERGED)
+    let finalReqs = '';
+    if (hasMails && hasFiles) {
+      finalReqs = `[HYBRID_EXTRACTION_ACTIVE]: Merging signals from Gmail and Local Docs\n\n${emailContext}\n\n---\n\n${fileContext}`;
+    } else if (hasMails) {
+      finalReqs = `[GMAIL_EXTRACTION_ACTIVE]: Mapping inbox signals\n\n${emailContext}`;
+    } else if (hasFiles) {
+      finalReqs = `[DOC_EXTRACTION_ACTIVE]: Decomposing uploaded documents\n\n${fileContext}`;
+    } else {
+      finalReqs = reqs + '\n\n---' + '\nSTAKEHOLDER GOALS:\n- Optimize data synchronization\n- Ensure end-to-end encryption\n- Implement real-time monitoring';
     }
 
     setFormData({
       ...formData,
       projectName: name,
       projectDesc: desc,
-      rawReqs: reqs,
-      sources: Array.from(new Set([...formData.sources, selected.length ? 'gmail' : (uploadedFiles.length ? 'docs' : 'manual')]))
+      rawReqs: finalReqs,
+      sources: Array.from(new Set([...formData.sources, hasMails ? 'gmail' : '', hasFiles ? 'docs' : ''].filter(Boolean)))
     });
   };
 
@@ -212,19 +221,22 @@ TRANSCRIPT: User Research Session
               className="sbtn"
               onClick={magicFill}
               style={{
-                background: 'var(--gold)',
-                border: 'none',
+                background: uploadedFiles.length > 0 || getSelectedEmailData().length > 0 ? 'var(--gold)' : 'rgba(255,255,255,0.05)',
+                border: uploadedFiles.length > 0 || getSelectedEmailData().length > 0 ? 'none' : '1px solid var(--border)',
                 borderRadius: '8px',
-                padding: '6px 14px',
-                color: '#000',
+                padding: '8px 16px',
+                color: uploadedFiles.length > 0 || getSelectedEmailData().length > 0 ? '#000' : 'rgba(255,255,255,0.4)',
                 fontFamily: "'DM Mono', monospace",
                 fontSize: '11px',
                 fontWeight: '600',
                 cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(196, 151, 62, 0.2)'
+                boxShadow: uploadedFiles.length > 0 || getSelectedEmailData().length > 0 ? '0 4px 12px rgba(196, 151, 62, 0.3)' : 'none',
+                transition: 'all 0.2s',
+                animation: uploadedFiles.length > 0 && !formData.projectName ? 'pulse-gold 2s infinite' : 'none'
               }}
             >
-              ✦ Magic Fill
+              <span style={{ marginRight: '6px' }}>✦</span>
+              {uploadedFiles.length > 0 ? 'Auto-fill from Uploads' : (getSelectedEmailData().length > 0 ? 'Auto-fill from Emails' : 'Magic Fill')}
             </button>
             <button
               className="sbtn"
