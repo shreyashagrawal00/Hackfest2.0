@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './generator.css';
 import { GmailMessage, GeneratorFormData, IndexedFile } from '@/app/types';
 
@@ -21,6 +21,58 @@ export default function GeneratorForm({ onGenerate, generating, integrations, up
     sources: ['manual'],
     sections: ['executive_summary', 'business_objectives', 'stakeholder_analysis', 'functional_requirements', 'non_functional_requirements', 'assumptions', 'success_metrics', 'timeline']
   });
+
+  // Fallback demo emails — always available when Gmail is connected
+  const demoEmails: GmailMessage[] = [
+    { id: 'demo-1', subject: 'RE: Q3 Product Launch Timeline', snippet: 'Team, we need to finalize the feature list by Friday. The client is expecting a demo next week and we must prioritize the dashboard module.' },
+    { id: 'demo-2', subject: 'FW: Updated API Specifications v2.3', snippet: 'Please review the attached API spec changes. Key updates include new auth endpoints and rate limiting requirements for the mobile app.' },
+    { id: 'demo-3', subject: 'Meeting Notes: Stakeholder Review (Feb 20)', snippet: 'Summary of decisions: 1) MVP scope reduced to 3 core modules 2) Launch date moved to April 15 3) Budget approved for cloud infrastructure.' },
+    { id: 'demo-4', subject: 'URGENT: Security Audit Findings', snippet: 'The penetration test revealed 2 critical vulnerabilities in the payment module. We need to address these before the next release cycle.' },
+    { id: 'demo-5', subject: 'RE: Database Migration Plan', snippet: 'I recommend we use a phased migration approach. Phase 1 covers user data, Phase 2 handles transaction history. Estimated downtime: 2 hours.' },
+    { id: 'demo-6', subject: 'Client Feedback: UX Improvements Needed', snippet: 'The client wants a simplified onboarding flow. Current 7-step process should be reduced to 3 steps. Also requesting dark mode support.' },
+    { id: 'demo-7', subject: 'Sprint 14 Retrospective Action Items', snippet: 'Key takeaways: improve code review turnaround time, add more integration tests, and set up automated deployment pipeline for staging.' },
+    { id: 'demo-8', subject: 'RE: Third-Party Integration Requirements', snippet: 'Salesforce integration needs OAuth 2.0 with refresh tokens. Stripe webhook support required for real-time payment notifications.' },
+    { id: 'demo-9', subject: 'Performance Benchmarks: Load Testing Results', snippet: 'System handles 10k concurrent users with avg response time of 230ms. Memory usage peaks at 4.2GB under maximum load conditions.' },
+    { id: 'demo-10', subject: 'FW: Compliance Requirements Update (GDPR)', snippet: 'Legal team confirmed we need data retention policies, user consent management, and right-to-deletion API within 60 days.' },
+    { id: 'demo-11', subject: 'RE: Mobile App Feature Parity Discussion', snippet: 'iOS and Android apps must support offline mode, push notifications, and biometric authentication by the v2.0 release.' },
+    { id: 'demo-12', subject: 'Architecture Decision: Microservices vs Monolith', snippet: 'After evaluation, recommending a modular monolith for Phase 1 with clear service boundaries to enable future microservices migration.' },
+    { id: 'demo-13', subject: 'Budget Approval: Infrastructure Scaling', snippet: 'AWS infrastructure budget increased to $12k/month for production. Includes auto-scaling groups, RDS multi-AZ, and CloudFront CDN.' },
+    { id: 'demo-14', subject: 'FW: User Research Findings — Navigation Study', snippet: '78% of users prefer sidebar navigation over top nav. Recommendation: implement collapsible sidebar with quick-access bookmarks.' },
+    { id: 'demo-15', subject: 'RE: QA Test Plan for Release 3.1', snippet: 'Test plan covers 142 test cases across 8 modules. Regression suite estimated at 6 hours. Automated coverage currently at 64%.' },
+  ];
+
+  // Use real emails if available, otherwise fall back to demo emails
+  const displayEmails: GmailMessage[] = (realEmails && realEmails.length > 0) ? realEmails : demoEmails;
+
+  const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
+
+  // Auto-select all emails when displayEmails change
+  useEffect(() => {
+    if (displayEmails.length > 0 && selectedEmails.size === 0) {
+      setSelectedEmails(new Set(displayEmails.map(e => e.id)));
+    }
+  }, [displayEmails.length]);
+
+  const toggleEmailSelection = (id: string) => {
+    setSelectedEmails(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllEmails = () => {
+    if (selectedEmails.size === displayEmails.length) {
+      setSelectedEmails(new Set());
+    } else {
+      setSelectedEmails(new Set(displayEmails.map(e => e.id)));
+    }
+  };
+
+  const getSelectedEmailData = () => {
+    return displayEmails.filter(e => selectedEmails.has(e.id));
+  };
 
   const loadTemplate = () => {
     setFormData({
@@ -112,11 +164,12 @@ TRANSCRIPT: User Research Session
 - "I need to be able to see the audit trail for every single stock movement."
 - "The UI shouldn't feel like a spreadsheet. Give me a visual map of the floor."`;
 
-    // 2. Override if we have REAL Gmail data
-    if (realEmails && realEmails.length > 0) {
-      name = `BRD_Input_${realEmails[0].subject.replace(/RE:|FW:/gi, '').trim() || 'Gmail_Project'}`;
-      desc = `Sophisticated extraction active. Analyzing ${realEmails.length} communication threads to synthesize business requirements and stakeholder constraints. Focus: ${realEmails[0].subject}.`;
-      reqs = realEmails.map(m => `[GMAIL_SIGNAL]: ${m.subject}\nContent: ${m.snippet || 'Body content filtered for noise.'}`).join('\n\n---\n\n');
+    // 2. Override if we have SELECTED Gmail data
+    const selected = getSelectedEmailData();
+    if (selected.length > 0) {
+      name = `BRD_Input_${selected[0].subject.replace(/RE:|FW:/gi, '').trim() || 'Gmail_Project'}`;
+      desc = `Sophisticated extraction active. Analyzing ${selected.length} selected communication threads to synthesize business requirements and stakeholder constraints. Focus: ${selected[0].subject}.`;
+      reqs = selected.map(m => `[GMAIL_SIGNAL]: ${m.subject}\nContent: ${m.snippet || 'Body content filtered for noise.'}`).join('\n\n---\n\n');
     }
     // 3. Override if we have UPLOADED files
     else if (uploadedFiles.length > 0) {
@@ -135,7 +188,7 @@ TRANSCRIPT: User Research Session
       projectName: name,
       projectDesc: desc,
       rawReqs: reqs,
-      sources: Array.from(new Set([...formData.sources, realEmails?.length ? 'gmail' : (uploadedFiles.length ? 'docs' : 'manual')]))
+      sources: Array.from(new Set([...formData.sources, selected.length ? 'gmail' : (uploadedFiles.length ? 'docs' : 'manual')]))
     });
   };
 
@@ -289,27 +342,53 @@ TRANSCRIPT: User Research Session
           )}
         </div>
 
-        {(integrations.gmail && (fetchingMails || (realEmails && realEmails.length > 0))) || integrations.fireflies ? (
+        {formData.sources.includes('gmail') && integrations.gmail && (
+          <>
+            <div className="section-lbl" style={{ marginTop: '20px' }}>
+              <span>Select Emails for BRD</span>
+            </div>
+            <div className="email-select-panel">
+              {fetchingMails ? (
+                <div className="email-loading">
+                  <span className="spinner" style={{ width: '14px', height: '14px', borderTopColor: 'var(--gold)' }}></span>
+                  <span>Scanning your inbox...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="email-select-header">
+                    <button className="email-select-all-btn" onClick={selectAllEmails}>
+                      {selectedEmails.size === displayEmails.length ? '☐ Deselect All' : '☑ Select All'}
+                    </button>
+                    <span className="email-count">{selectedEmails.size} / {displayEmails.length} selected</span>
+                  </div>
+                  <div className="email-list-scroll">
+                    {displayEmails.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`email-item ${selectedEmails.has(msg.id) ? 'selected' : ''}`}
+                        onClick={() => toggleEmailSelection(msg.id)}
+                      >
+                        <div className={`email-checkbox ${selectedEmails.has(msg.id) ? 'checked' : ''}`}>
+                          {selectedEmails.has(msg.id) && '✓'}
+                        </div>
+                        <div className="email-item-content">
+                          <div className="email-subject">{msg.subject}</div>
+                          {msg.snippet && <div className="email-snippet">{msg.snippet.slice(0, 80)}…</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        )}
+
+        {integrations.fireflies && !formData.sources.includes('gmail') ? (
           <>
             <div className="section-lbl" style={{ marginTop: '20px' }}>Intelligence Signal</div>
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', fontSize: '11px', color: 'var(--mist)', fontFamily: "'DM Mono', monospace" }}>
-              {fetchingMails ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span className="spinner" style={{ width: '12px', height: '12px', borderTopColor: 'var(--gold)' }}></span>
-                  <span style={{ color: 'var(--gold)' }}>Scanning project-relevant emails...</span>
-                </div>
-              ) : integrations.gmail && realEmails && realEmails.length > 0 ? (
-                <div className="real-signal-list">
-                  <div style={{ color: 'var(--gold)', marginBottom: '8px', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '0.1em' }}>Live Gmail Feed Active</div>
-                  {realEmails.map((msg) => (
-                    <div key={msg.id} style={{ marginBottom: '6px', borderLeft: '1px solid var(--sage)', paddingLeft: '8px', opacity: 0.8 }}>
-                      {msg.subject}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                "Using AMI Meeting Corpus (CC BY 4.0) for requirements validation."
-              )}
+              Using AMI Meeting Corpus (CC BY 4.0) for requirements validation.
             </div>
           </>
         ) : null}

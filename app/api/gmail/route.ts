@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   try {
     // 1. Fetch the list of latest messages
     const listRes = await fetch(
-      'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=5',
+      'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=15',
       {
         headers: { Authorization: `Bearer ${token}` },
       }
