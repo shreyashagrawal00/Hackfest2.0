@@ -262,3 +262,181 @@
 .manage-btn:hover {
   border-color: var(--sage);
 }
+
+/* Quick Generate Button */
+.quick-gen-btn {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  border: none;
+  border-radius: 11px;
+  padding: 12px 20px;
+  color: #000;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 12px rgba(196, 151, 62, 0.25);
+}
+
+.quick-gen-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(196, 151, 62, 0.35);
+}
+
+/* Step-by-step Empty State */
+.empty-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.empty-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.empty-step:hover {
+  background: rgba(61, 90, 71, 0.05);
+}
+
+.step-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--mist);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.step-icon {
+  width: 42px;
+  height: 42px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.step-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.step-arrow {
+  font-size: 18px;
+  color: var(--mist);
+  opacity: 0.5;
+  margin-top: 12px;
+}
+
+/* Email Preview Card */
+.email-preview-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.email-preview-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.email-preview-item:last-of-type {
+  border-bottom: none;
+}
+
+.email-preview-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sage);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.email-preview-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.email-preview-subj {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email-preview-snip {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--mist);
+  margin-top: 2px;
+}
+
+.quick-gen-link {
+  width: 100%;
+  margin-top: 12px;
+  background: rgba(61, 90, 71, 0.06);
+  border: 1px dashed var(--sage);
+  border-radius: 10px;
+  padding: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--sage);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.quick-gen-link:hover {
+  background: rgba(61, 90, 71, 0.1);
+}
+
+/* Mobile Responsiveness (#8) */
+@media (max-width: 768px) {
+  .dash-wrap {
+    padding: 20px 16px 40px;
+  }
+
+  .dash-hero-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stat-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .empty-steps {
+    flex-wrap: wrap;
+  }
+
+  .step-arrow {
+    display: none;
+  }
+}

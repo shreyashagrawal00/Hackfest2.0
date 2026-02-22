@@ -118,6 +118,16 @@ FW: Quarterly Newsletter - Internal Only
     });
   };
 
+  // #2: Auto-select Gmail source when integration is active
+  useEffect(() => {
+    if (integrations.gmail && !formData.sources.includes('gmail')) {
+      setFormData(prev => ({
+        ...prev,
+        sources: [...prev.sources, 'gmail']
+      }));
+    }
+  }, [integrations.gmail]);
+
   const toggleSource = (src: string) => {
     if (src === 'gmail' && !integrations.gmail) return;
     if (src === 'slack' && !integrations.slack) return;
@@ -314,7 +324,11 @@ TRANSCRIPT: User Research Session
           disabled={generating || !formData.projectName}
           onClick={() => onGenerate(formData)}
         >
-          {generating ? <><span className="spinner"></span>Processing dataset…</> : '✦ Generate BRD with AI'}
+          {generating ? <><span className="spinner"></span>Processing dataset…</> : (
+            selectedEmails.size > 0 && formData.sources.includes('gmail')
+              ? `✦ Generate BRD from ${selectedEmails.size} email${selectedEmails.size !== 1 ? 's' : ''}`
+              : '✦ Generate BRD with AI'
+          )}
         </button>
       </div>
 
@@ -393,7 +407,7 @@ TRANSCRIPT: User Research Session
           </>
         ) : null}
       </div>
-    </div>
+    </div >
   );
 }
 

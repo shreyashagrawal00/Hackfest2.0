@@ -2,7 +2,7 @@
 
 import React from 'react';
 import './dashboard.css';
-import { BRD, IndexedFile } from '@/app/types';
+import { BRD, IndexedFile, GmailMessage } from '@/app/types';
 
 interface DashboardProps {
   brds: BRD[];
@@ -11,7 +11,9 @@ interface DashboardProps {
   onNavigateToGenerate: () => void;
   onNavigateToIntegrations: () => void;
   onOpenBRD: (index: number) => void;
+  onQuickGenerate: () => void;
   userName: string;
+  realEmails: GmailMessage[];
 }
 
 export default function Dashboard({
@@ -21,8 +23,18 @@ export default function Dashboard({
   onNavigateToGenerate,
   onNavigateToIntegrations,
   onOpenBRD,
-  userName
+  onQuickGenerate,
+  userName,
+  realEmails
 }: DashboardProps) {
+
+  // Demo emails for preview when real ones aren't available
+  const previewEmails = (realEmails && realEmails.length > 0) ? realEmails.slice(0, 4) : [
+    { id: 'd1', subject: 'RE: Q3 Product Launch Timeline', snippet: 'Team, we need to finalize the feature list by Friday...' },
+    { id: 'd2', subject: 'FW: Updated API Specifications v2.3', snippet: 'Please review the attached API spec changes...' },
+    { id: 'd3', subject: 'Meeting Notes: Stakeholder Review', snippet: 'Summary of decisions: MVP scope reduced to 3 modules...' },
+    { id: 'd4', subject: 'URGENT: Security Audit Findings', snippet: 'The penetration test revealed 2 critical vulnerabilities...' },
+  ];
   const totalBRDs = brds.length;
   const sourcesCount = Object.values(integrations).filter(Boolean).length;
   const filesCount = uploadedFiles.length;
@@ -36,9 +48,16 @@ export default function Dashboard({
             <div className="page-title">Welcome, <em>{userName}</em></div>
             <div className="page-sub">{totalBRDs} documents generated · {sourcesCount} sources connected</div>
           </div>
-          <button className="new-btn" onClick={onNavigateToGenerate}>
-            ✦ &nbsp;New BRD
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {integrations.gmail && (
+              <button className="quick-gen-btn" onClick={onQuickGenerate}>
+                📧 Quick Generate from Emails
+              </button>
+            )}
+            <button className="new-btn" onClick={onNavigateToGenerate}>
+              ✦ &nbsp;New BRD
+            </button>
+          </div>
         </div>
 
         <div className="stat-row">
@@ -70,9 +89,27 @@ export default function Dashboard({
             <div className="brd-list">
               {brds.length === 0 ? (
                 <div className="empty-list-card">
-                  <div className="empty-icon">✦</div>
-                  <div className="empty-text">
-                    No BRDs yet. <span className="action-link" onClick={onNavigateToGenerate}>Generate your first one →</span>
+                  <div className="empty-steps">
+                    <div className="empty-step" onClick={onNavigateToIntegrations}>
+                      <div className="step-num">1</div>
+                      <div className="step-icon">📧</div>
+                      <div className="step-text">Connect Gmail</div>
+                    </div>
+                    <div className="step-arrow">→</div>
+                    <div className="empty-step" onClick={onNavigateToGenerate}>
+                      <div className="step-num">2</div>
+                      <div className="step-icon">✓</div>
+                      <div className="step-text">Select Emails</div>
+                    </div>
+                    <div className="step-arrow">→</div>
+                    <div className="empty-step" onClick={onNavigateToGenerate}>
+                      <div className="step-num">3</div>
+                      <div className="step-icon">✦</div>
+                      <div className="step-text">Generate BRD</div>
+                    </div>
+                  </div>
+                  <div className="empty-text" style={{ marginTop: '16px' }}>
+                    Get started in 3 simple steps. <span className="action-link" onClick={onNavigateToGenerate}>Start now →</span>
                   </div>
                 </div>
               ) : (
@@ -90,6 +127,27 @@ export default function Dashboard({
                 ))
               )}
             </div>
+
+            {/* Email Preview (#4) */}
+            {integrations.gmail && (
+              <div style={{ marginTop: '24px' }}>
+                <div className="section-lbl">Recent Email Feed</div>
+                <div className="email-preview-card">
+                  {previewEmails.map((msg) => (
+                    <div key={msg.id} className="email-preview-item">
+                      <div className="email-preview-dot"></div>
+                      <div className="email-preview-info">
+                        <div className="email-preview-subj">{msg.subject}</div>
+                        {msg.snippet && <div className="email-preview-snip">{msg.snippet.slice(0, 60)}…</div>}
+                      </div>
+                    </div>
+                  ))}
+                  <button className="quick-gen-link" onClick={onQuickGenerate}>
+                    ✦ Generate BRD from these emails →
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <div className="section-lbl">Data Sources</div>

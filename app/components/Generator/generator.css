@@ -330,3 +330,57 @@
   color: var(--mist);
   text-align: center;
 }
+
+/* #7: Animated highlight when email panel appears */
+.email-select-panel {
+  animation: panelSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  border: 1px solid transparent;
+}
+
+@keyframes panelSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    border-color: var(--gold);
+    box-shadow: 0 0 16px rgba(196, 151, 62, 0.2);
+  }
+
+  70% {
+    border-color: var(--gold);
+    box-shadow: 0 0 12px rgba(196, 151, 62, 0.15);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    border-color: transparent;
+    box-shadow: none;
+  }
+}
+
+/* #8: Mobile responsiveness for generator layout */
+@media (max-width: 900px) {
+  .gen-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .gen-side {
+    order: -1;
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .gen-form-wrap {
+    padding: 20px 16px 40px;
+  }
+
+  .chips-row {
+    flex-wrap: wrap;
+  }
+
+  .gen-btn {
+    font-size: 13px;
+    padding: 14px;
+  }
+}
